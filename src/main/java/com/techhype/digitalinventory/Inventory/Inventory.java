@@ -19,6 +19,9 @@ public class Inventory {
     @Column(name = "id", updatable = false)
     private Long id;
 
+    @Column(name = "label", nullable = false)
+    private String label;
+
     @Column(name = "itemref", unique = true)
     private String itemref;
 
@@ -41,10 +44,10 @@ public class Inventory {
     private int status = 1;
 
     @Column(name = "userid", nullable = false)
-    private String userid;
+    private String userid = "1";
 
     @Column(name = "username", nullable = false)
-    private String username;
+    private String username = "admin";
 
     @Column(name = "createddate", nullable = false, columnDefinition = "timestamp default now()")
     private LocalDateTime createddate;
@@ -53,6 +56,14 @@ public class Inventory {
     private LocalDateTime modifieddate;
 
     public Inventory() {
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label;
     }
 
     public boolean isIsinfinite() {
