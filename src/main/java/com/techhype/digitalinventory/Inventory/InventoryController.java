@@ -1,6 +1,7 @@
 package com.techhype.digitalinventory.Inventory;
 
 import com.techhype.digitalinventory.models.BaseResponse;
+import com.techhype.digitalinventory.models.PaginationResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,8 +38,14 @@ public class InventoryController {
     public ResponseEntity<BaseResponse> getInventories(@RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page, @RequestParam int perpage) {
         try {
-            return ResponseEntity.ok()
-                    .body(new BaseResponse(200, "Success", iService.getInventories(search, page, perpage)));
+            var invpage = iService.getInventories(search, page, perpage);
+            var body = new PaginationResponse();
+            body.setData(invpage.getContent());
+            body.setPagecount(invpage.getTotalPages());
+            body.setTotal(invpage.getNumberOfElements());
+            body.setPage(page);
+            body.setPerpage(perpage);
+            return ResponseEntity.ok().body(body);
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(new BaseResponse(500, "Internal Server Error", null));
         }

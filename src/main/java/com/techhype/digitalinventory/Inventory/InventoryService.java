@@ -27,11 +27,12 @@ public class InventoryService {
     }
 
     public Page<Inventory> getInventories(String search, int page, int perpage) {
-        var pagable = PageRequest.of(page, perpage);
+        var pagable = PageRequest.of(page - 1, perpage);
         if (search == null || search.isEmpty()) {
-            String s = search.trim();
-            return iRepo.findByItemrefContainingOrItemcodeContainingOrLabelContaining(s, s, s, pagable);
+            return iRepo.findAll(pagable);
         }
-        return iRepo.findAll(pagable);
+
+        String s = search.trim();
+        return iRepo.findByItemrefContainingOrItemcodeContainingOrLabelContaining(s, s, s, pagable);
     }
 }

@@ -1,11 +1,10 @@
 package com.techhype.digitalinventory.models;
 
-public class PaginationResponse {
+public class PaginationResponse extends BaseResponse {
     private int page;
     private int perpage;
     private int pagecount;
     private int total;
-    private Object data;
 
     public int getPage() {
         return page;
@@ -37,14 +36,6 @@ public class PaginationResponse {
 
     public void setTotal(int total) {
         this.total = total;
-    }
-
-    public Object getData() {
-        return data;
-    }
-
-    public void setData(Object data) {
-        this.data = data;
     }
 
 }

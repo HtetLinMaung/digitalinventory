@@ -1,0 +1,13 @@
+POST http://localhost:8081/api/v1/inventories HTTP/1.1
+content-type: application/json
+
+{
+    "itemcode": "123458",
+    "label": "test item",
+    "netprice": "1000",
+    "price": "1000",
+    "isinfinite": true,
+    "counts": 0,
+    "remark": "Testing inventory"
+}
+
