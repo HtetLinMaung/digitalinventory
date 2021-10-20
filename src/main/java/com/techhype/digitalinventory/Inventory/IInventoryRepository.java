@@ -9,9 +9,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IInventoryRepository extends JpaRepository<Inventory, Long> {
-    // @Query("SELECT i FROM Inventory i WHERE i.itemref = ?1")
-    Optional<Inventory> findInventoryByItemref(String itemref);
+    Optional<Inventory> findByItemrefAndUseridAndCompanyidAndStatus(String itemref, String userid, String companyid,
+            int status);
 
-    Page<Inventory> findByItemrefContainingOrItemcodeContainingOrLabelContaining(String itemref, String itemcode,
-            String label, Pageable pagable);
+    Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefContainingOrItemcodeContainingOrLabelContainingOrTagContaining(
+            String userid, String companyid, int status, String itemref, String itemcode, String label, String tag,
+            Pageable pagable);
+
+    Page<Inventory> findByUseridAndCompanyidAndStatus(String userid, String companyid, int status, Pageable pagable);
 }

@@ -26,7 +26,7 @@ public class Inventory {
     private String itemref;
 
     @Column(name = "itemcode", unique = true)
-    private String itemcode;
+    private String itemcode = "";
 
     @Column(name = "netprice", nullable = false)
     private double netprice;
@@ -37,17 +37,25 @@ public class Inventory {
     @Column(name = "isinfinite", nullable = false, columnDefinition = "boolean default true")
     private boolean isinfinite = true;
 
-    private int counts;
-    private String remark;
+    private int counts = 0;
+    private String remark = "";
+    private int remaining = 0;
+    private String tag = "";
 
     @Column(name = "status", nullable = false, columnDefinition = "int4 default 1")
     private int status = 1;
 
     @Column(name = "userid", nullable = false)
-    private String userid = "1";
+    private String userid;
 
     @Column(name = "username", nullable = false)
-    private String username = "admin";
+    private String username;
+
+    @Column(name = "companyid", nullable = false)
+    private String companyid;
+
+    @Column(name = "companyname", nullable = false)
+    private String companyname;
 
     @Column(name = "createddate", nullable = false, columnDefinition = "timestamp default now()")
     private LocalDateTime createddate;
@@ -58,8 +66,40 @@ public class Inventory {
     public Inventory() {
     }
 
+    public String getCompanyid() {
+        return companyid;
+    }
+
+    public void setCompanyid(String companyid) {
+        this.companyid = companyid;
+    }
+
+    public String getCompanyname() {
+        return companyname;
+    }
+
+    public void setCompanyname(String companyname) {
+        this.companyname = companyname;
+    }
+
     public String getLabel() {
         return label;
+    }
+
+    public int getRemaining() {
+        return remaining;
+    }
+
+    public void setRemaining(int remaining) {
+        this.remaining = remaining;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public void setLabel(String label) {

@@ -1,8 +1,11 @@
 package com.techhype.digitalinventory.models;
 
+import com.techhype.digitalinventory.constants.ServerMessage;
+import com.techhype.digitalinventory.constants.ServerStatus;
+
 public class BaseResponse {
-    private int code = 200;
-    private String message = "Successful";
+    private int code = ServerStatus.OK;
+    private String message = ServerMessage.OK;
     private Object data;
 
     public BaseResponse() {
@@ -12,6 +15,18 @@ public class BaseResponse {
         this.code = code;
         this.message = message;
         this.data = data;
+    }
+
+    public static BaseResponse ok(Object data) {
+        return new BaseResponse(data);
+    }
+
+    public static BaseResponse internalServerError() {
+        return new BaseResponse(ServerStatus.INTERNAL_SERVER_ERROR, ServerMessage.INTERNAL_SERVER_ERROR, null);
+    }
+
+    public static BaseResponse notFound() {
+        return new BaseResponse(ServerStatus.NOT_FOUND, ServerMessage.NOT_FOUND, null);
     }
 
     public BaseResponse(Object data) {

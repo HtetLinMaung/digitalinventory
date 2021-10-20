@@ -1,1 +1,1 @@
-GET http://localhost:8081/api/v1/inventories?page=1&perpage=10&search=123458 HTTP/1.1
+GET http://localhost:8081/api/v1/inventories?page=1&perpage=10 HTTP/1.1
