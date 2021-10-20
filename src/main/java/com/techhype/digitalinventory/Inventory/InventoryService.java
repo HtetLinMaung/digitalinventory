@@ -71,13 +71,20 @@ public class InventoryService {
         return iRepo.save(newInv);
     }
 
-    public Page<Inventory> getInventories(String search, int page, int perpage, String sortby, TokenData tokenData) {
-        var pagable = PageRequest.of(page - 1, perpage, Sort.by(Sort.Direction.DESC, sortby));
+    public Page<Inventory> getInventories(String search, int page, int perpage, String sortby, String reverse,
+            TokenData tokenData) {
+        var pagable = PageRequest.of(page - 1, perpage,
+                Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
         if (search == null || search.isEmpty()) {
             return iRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1, pagable);
         }
 
         String s = search.trim();
+        if (s.startsWith("\"") && s.endsWith("\"")) {
+            s = s.replaceAll("\"", "");
+            return iRepo.findByUseridAndCompanyidAndStatusAndItemrefOrItemcodeOrLabelOrTag(tokenData.getUserid(),
+                    tokenData.getCompanyid(), 1, s, s, s, s, pagable);
+        }
         return iRepo
                 .findByUseridAndCompanyidAndStatusAndItemrefContainingOrItemcodeContainingOrLabelContainingOrTagContaining(
                         tokenData.getUserid(), tokenData.getCompanyid(), 1, s, s, s, s, pagable);

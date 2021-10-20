@@ -25,7 +25,7 @@ public class Inventory {
     @Column(name = "itemref", unique = true)
     private String itemref;
 
-    @Column(name = "itemcode", unique = true)
+    @Column(name = "itemcode", nullable = false)
     private String itemcode = "";
 
     @Column(name = "netprice", nullable = false)

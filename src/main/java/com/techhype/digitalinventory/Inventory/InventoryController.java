@@ -86,9 +86,10 @@ public class InventoryController {
     @GetMapping
     public ResponseEntity<BaseResponse> getInventories(@RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page, @RequestParam int perpage,
-            @RequestParam(defaultValue = "createddate") String sortby) {
+            @RequestParam(defaultValue = "createddate") String sortby,
+            @RequestParam(defaultValue = "1") String reverse) {
         try {
-            var invpage = iService.getInventories(search, page, perpage, sortby, new TokenData());
+            var invpage = iService.getInventories(search, page, perpage, sortby, reverse, new TokenData());
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());

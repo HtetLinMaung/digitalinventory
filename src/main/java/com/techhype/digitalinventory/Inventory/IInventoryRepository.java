@@ -16,5 +16,8 @@ public interface IInventoryRepository extends JpaRepository<Inventory, Long> {
             String userid, String companyid, int status, String itemref, String itemcode, String label, String tag,
             Pageable pagable);
 
+    Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefOrItemcodeOrLabelOrTag(String userid, String companyid,
+            int status, String itemref, String itemcode, String label, String tag, Pageable pagable);
+
     Page<Inventory> findByUseridAndCompanyidAndStatus(String userid, String companyid, int status, Pageable pagable);
 }
