@@ -1,5 +1,7 @@
 package com.techhype.digitalinventory.Inventory;
 
+import java.util.List;
+
 import com.techhype.digitalinventory.constants.ServerMessage;
 import com.techhype.digitalinventory.constants.ServerStatus;
 import com.techhype.digitalinventory.models.BaseResponse;
@@ -93,7 +95,7 @@ public class InventoryController {
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());
-            body.setTotal(invpage.getNumberOfElements());
+            body.setTotal(invpage.getTotalElements());
             body.setPage(page);
             body.setPerpage(perpage);
             return ResponseEntity.ok().body(body);
@@ -101,4 +103,14 @@ public class InventoryController {
             return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
         }
     }
+
+    @GetMapping(value = "inventory-combo")
+    public ResponseEntity<BaseResponse> getInventoriesForCombo() {
+        try {
+            return ResponseEntity.ok().body(BaseResponse.ok(iService.getInventoriesForCombo(new TokenData())));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
+
 }

@@ -4,7 +4,7 @@ public class PaginationResponse extends BaseResponse {
     private int page;
     private int perpage;
     private int pagecount;
-    private int total;
+    private long total;
 
     public int getPage() {
         return page;
@@ -30,11 +30,11 @@ public class PaginationResponse extends BaseResponse {
         this.pagecount = pagecount;
     }
 
-    public int getTotal() {
+    public long getTotal() {
         return total;
     }
 
-    public void setTotal(int total) {
+    public void setTotal(long total) {
         this.total = total;
     }
 

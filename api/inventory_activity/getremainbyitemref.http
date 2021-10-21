@@ -1,0 +1,1 @@
+GET http://localhost:8080/api/v1/inventory-activities/remainings/I000001 HTTP/1.1
