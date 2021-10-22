@@ -1,5 +1,7 @@
 package com.techhype.digitalinventory.InventoryActivity;
 
+import java.time.LocalDateTime;
+
 import com.techhype.digitalinventory.constants.ServerMessage;
 import com.techhype.digitalinventory.constants.ServerStatus;
 import com.techhype.digitalinventory.models.BaseResponse;
@@ -7,6 +9,7 @@ import com.techhype.digitalinventory.models.PaginationResponse;
 import com.techhype.digitalinventory.models.TokenData;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -71,10 +74,12 @@ public class InvActivityController {
     public ResponseEntity<BaseResponse> getInvActivities(@RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page, @RequestParam int perpage,
             @RequestParam(defaultValue = "createddate") String sortby, @RequestParam(defaultValue = "1") String reverse,
-            @RequestParam int voidstatus) {
+            @RequestParam int voidstatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate) {
         try {
-            var invpage = iaService.getInvActivities(search, page, perpage, sortby, reverse, voidstatus,
-                    new TokenData());
+            var invpage = iaService.getInvActivities(search, page, perpage, sortby, reverse, voidstatus, fromdate,
+                    todate, new TokenData());
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());

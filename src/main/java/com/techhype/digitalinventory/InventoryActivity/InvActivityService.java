@@ -77,13 +77,21 @@ public class InvActivityService {
     }
 
     public Page<InventoryActivity> getInvActivities(String search, int page, int perpage, String sortby, String reverse,
-            int voidstatus, TokenData tokenData) {
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, TokenData tokenData) {
         var pagable = PageRequest.of(page - 1, perpage,
                 Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
         if (search == null || search.isEmpty()) {
             if (voidstatus == 2) {
+                if (fromdate != null && todate != null) {
+                    return iaRepo.findByUseridAndCompanyidAndStatusAndDateBetween(tokenData.getUserid(),
+                            tokenData.getCompanyid(), 1, fromdate, todate, pagable);
+                }
                 return iaRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1,
                         pagable);
+            }
+            if (fromdate != null && todate != null) {
+                return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetween(tokenData.getUserid(),
+                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, pagable);
             }
             return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatus(tokenData.getUserid(),
                     tokenData.getCompanyid(), 1, voidstatus, pagable);
@@ -93,12 +101,33 @@ public class InvActivityService {
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
             if (voidstatus == 2) {
+                if (fromdate != null && todate != null) {
+                    return iaRepo
+                            .findByUseridAndCompanyidAndStatusAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                }
                 return iaRepo
                         .findByUseridAndCompanyidAndStatusAndActivityrefOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndVouchercodeOrUseridAndCompanyidAndStatusAndCustomernameOrUseridAndCompanyidAndStatusAndInvstatus(
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
                                 tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
                                 tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
+                                pagable);
+            }
+            if (fromdate != null && todate != null) {
+                return iaRepo
+                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                                 pagable);
             }
             return iaRepo
@@ -110,12 +139,33 @@ public class InvActivityService {
                             tokenData.getCompanyid(), 1, voidstatus, s, pagable);
         }
         if (voidstatus == 2) {
+            if (fromdate != null & todate != null) {
+                return iaRepo
+                        .findByUseridAndCompanyidAndStatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusContaining(
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+            }
             return iaRepo
                     .findByUseridAndCompanyidAndStatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndCustomernameContainingOrUseridAndCompanyidAndStatusAndInvstatusContaining(
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
                             tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
                             tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
+                            pagable);
+        }
+        if (fromdate != null && todate != null) {
+            return iaRepo
+                    .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusContaining(
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                             pagable);
         }
         return iaRepo

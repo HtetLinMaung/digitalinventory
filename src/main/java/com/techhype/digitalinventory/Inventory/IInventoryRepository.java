@@ -13,13 +13,15 @@ public interface IInventoryRepository extends JpaRepository<Inventory, Long> {
         Optional<Inventory> findByItemrefAndUseridAndCompanyidAndStatus(String itemref, String userid, String companyid,
                         int status);
 
-        Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefContainingOrItemcodeContainingOrLabelContainingOrTagContaining(
-                        String userid, String companyid, int status, String itemref, String itemcode, String label,
-                        String tag, Pageable pagable);
+        Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndTagContaining(
+                        String userid, String companyid, int status, String itemref, String userid2, String companyid2,
+                        int status2, String itemcode, String userid3, String companyid3, int status3, String label,
+                        String userid4, String companyid4, int status4, String tag, Pageable pagable);
 
-        Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefOrItemcodeOrLabelOrTag(String userid,
-                        String companyid, int status, String itemref, String itemcode, String label, String tag,
-                        Pageable pagable);
+        Page<Inventory> findByUseridAndCompanyidAndStatusAndItemrefOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndTag(
+                        String userid, String companyid, int status, String itemref, String userid2, String companyid2,
+                        int status2, String itemcode, String userid3, String companyid3, int status3, String label,
+                        String userid4, String companyid4, int status4, String tag, Pageable pagable);
 
         Page<Inventory> findByUseridAndCompanyidAndStatus(String userid, String companyid, int status,
                         Pageable pagable);

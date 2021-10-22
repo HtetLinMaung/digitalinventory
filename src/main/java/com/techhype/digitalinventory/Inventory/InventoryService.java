@@ -106,12 +106,17 @@ public class InventoryService {
         String s = search.trim();
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
-            return iRepo.findByUseridAndCompanyidAndStatusAndItemrefOrItemcodeOrLabelOrTag(tokenData.getUserid(),
-                    tokenData.getCompanyid(), 1, s, s, s, s, pagable);
+            return iRepo
+                    .findByUseridAndCompanyidAndStatusAndItemrefOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndTag(
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
+                            tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, pagable);
         }
         return iRepo
-                .findByUseridAndCompanyidAndStatusAndItemrefContainingOrItemcodeContainingOrLabelContainingOrTagContaining(
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1, s, s, s, s, pagable);
+                .findByUseridAndCompanyidAndStatusAndItemrefContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndTagContaining(
+                        tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
+                        tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
+                        tokenData.getUserid(), tokenData.getCompanyid(), 1, s, pagable);
     }
 
     public List<InventoryDto> getInventoriesForCombo(TokenData tokenData) {
