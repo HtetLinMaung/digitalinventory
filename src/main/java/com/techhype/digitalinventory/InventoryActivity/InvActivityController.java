@@ -76,10 +76,11 @@ public class InvActivityController {
             @RequestParam(defaultValue = "createddate") String sortby, @RequestParam(defaultValue = "1") String reverse,
             @RequestParam int voidstatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
+            @RequestParam String invstatus) {
         try {
             var invpage = iaService.getInvActivities(search, page, perpage, sortby, reverse, voidstatus, fromdate,
-                    todate, new TokenData());
+                    todate, invstatus, new TokenData());
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());
@@ -87,6 +88,24 @@ public class InvActivityController {
             body.setPage(page);
             body.setPerpage(perpage);
             return ResponseEntity.ok().body(body);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
+
+    @GetMapping(path = "totals")
+    public ResponseEntity<BaseResponse> getInvActivitiesTotal(@RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "1") int page, @RequestParam int perpage,
+            @RequestParam(defaultValue = "createddate") String sortby, @RequestParam(defaultValue = "1") String reverse,
+            @RequestParam int voidstatus,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
+            @RequestParam String invstatus) {
+        try {
+            var totals = iaService.getInvActiviesTotal(search, page, perpage, sortby, reverse, voidstatus, fromdate,
+                    todate, invstatus, new TokenData());
+
+            return ResponseEntity.ok().body(BaseResponse.ok(totals));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
         }

@@ -76,22 +76,145 @@ public class InvActivityService {
                 1, activityref);
     }
 
+    public IAFilterTotalDto getInvActiviesTotal(String search, int page, int perpage, String sortby, String reverse,
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
+        if (search == null || search.isEmpty()) {
+            if (voidstatus == 2) {
+                if (fromdate != null && todate != null) {
+                    if (!invstatus.equals("all")) {
+                        return iaRepo.getTotalsByDateBetweenAndInvstatus(tokenData.getUserid(),
+                                tokenData.getCompanyid(), fromdate, todate, invstatus).get(0);
+                    }
+                    return iaRepo
+                            .getTotalsByDateBetween(tokenData.getUserid(), tokenData.getCompanyid(), fromdate, todate)
+                            .get(0);
+                }
+                if (!invstatus.equals("all")) {
+                    return iaRepo.getTotalsByInvstatus(tokenData.getUserid(), tokenData.getCompanyid(), invstatus)
+                            .get(0);
+                }
+                return iaRepo.getTotals(tokenData.getUserid(), tokenData.getCompanyid()).get(0);
+            }
+            if (fromdate != null && todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatus(tokenData.getUserid(),
+                            tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus).get(0);
+                }
+                return iaRepo.getTotalsByVoidstatusAndDateBetween(tokenData.getUserid(), tokenData.getCompanyid(),
+                        voidstatus, fromdate, todate).get(0);
+            }
+
+            if (!invstatus.equals("all")) {
+                return iaRepo.getTotalsByVoidstatusAndInvstatus(tokenData.getUserid(), tokenData.getCompanyid(),
+                        voidstatus, invstatus).get(0);
+            }
+            return iaRepo.getTotalsByVoidstatus(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus).get(0);
+        }
+
+        String s = search.trim();
+        if (s.startsWith("\"") && s.endsWith("\"")) {
+            s = s.replaceAll("\"", "");
+            if (voidstatus == 2) {
+                if (fromdate != null && todate != null) {
+                    if (!invstatus.equals("all")) {
+                        return iaRepo.getTotalsByDateBetweenAndInvstatusForSearch(tokenData.getUserid(),
+                                tokenData.getCompanyid(), fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                    }
+                    return iaRepo.getTotalsByDateBetweenForSearch(tokenData.getUserid(), tokenData.getCompanyid(),
+                            fromdate, todate, s, s, s, s, s, s).get(0);
+                }
+                if (!invstatus.equals("all")) {
+                    return iaRepo.getTotalsByInvstatusForSearch(tokenData.getUserid(), tokenData.getCompanyid(),
+                            invstatus, s, s, s, s, s).get(0);
+                }
+                return iaRepo.getTotalsForSearch(tokenData.getUserid(), tokenData.getCompanyid(), s, s, s, s, s, s)
+                        .get(0);
+            }
+            if (fromdate != null && todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo
+                            .getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearch(tokenData.getUserid(),
+                                    tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus, s, s, s, s, s)
+                            .get(0);
+                }
+                return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearch(tokenData.getUserid(),
+                        tokenData.getCompanyid(), voidstatus, fromdate, todate, s, s, s, s, s, s).get(0);
+            }
+            if (!invstatus.equals("all")) {
+                return iaRepo.getTotalsByVoidstatusAndInvstatusForSearch(tokenData.getUserid(),
+                        tokenData.getCompanyid(), voidstatus, invstatus, s, s, s, s, s).get(0);
+            }
+            return iaRepo.getTotalsByVoidstatusForSearch(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus, s,
+                    s, s, s, s, s).get(0);
+        }
+        if (voidstatus == 2) {
+            if (fromdate != null & todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo.getTotalsByDateBetweenAndInvstatusForContainSearch(tokenData.getUserid(),
+                            tokenData.getCompanyid(), fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                }
+                return iaRepo.getTotalsByDateBetweenForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(),
+                        fromdate, todate, s, s, s, s, s, s).get(0);
+            }
+            if (!invstatus.equals("all")) {
+                return iaRepo.getTotalsByInvstatusForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(),
+                        invstatus, s, s, s, s, s).get(0);
+            }
+            return iaRepo.getTotalsForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(), s, s, s, s, s, s)
+                    .get(0);
+        }
+        if (fromdate != null && todate != null) {
+            if (!invstatus.equals("all")) {
+                return iaRepo
+                        .getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearchContain(tokenData.getUserid(),
+                                tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus, s, s, s, s, s)
+                        .get(0);
+            }
+            return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearchContain(tokenData.getUserid(),
+                    tokenData.getCompanyid(), voidstatus, fromdate, todate, s, s, s, s, s, s).get(0);
+        }
+        if (!invstatus.equals("all")) {
+            return iaRepo.getTotalsByVoidstatusAndInvstatusForSearchContain(tokenData.getUserid(),
+                    tokenData.getCompanyid(), voidstatus, invstatus, s, s, s, s, s).get(0);
+        }
+        return iaRepo.getTotalsByVoidstatusForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus,
+                s, s, s, s, s, s).get(0);
+    }
+
     public Page<InventoryActivity> getInvActivities(String search, int page, int perpage, String sortby, String reverse,
-            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, TokenData tokenData) {
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
         var pagable = PageRequest.of(page - 1, perpage,
                 Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
         if (search == null || search.isEmpty()) {
             if (voidstatus == 2) {
                 if (fromdate != null && todate != null) {
+                    if (!invstatus.equals("all")) {
+                        return iaRepo.findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, fromdate, todate, invstatus, pagable);
+                    }
                     return iaRepo.findByUseridAndCompanyidAndStatusAndDateBetween(tokenData.getUserid(),
                             tokenData.getCompanyid(), 1, fromdate, todate, pagable);
+                }
+                if (!invstatus.equals("all")) {
+                    return iaRepo.findByUseridAndCompanyidAndStatusAndInvstatus(tokenData.getUserid(),
+                            tokenData.getCompanyid(), 1, invstatus, pagable);
                 }
                 return iaRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1,
                         pagable);
             }
             if (fromdate != null && todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus,
+                            pagable);
+                }
                 return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetween(tokenData.getUserid(),
                         tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, pagable);
+            }
+
+            if (!invstatus.equals("all")) {
+                return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatus(tokenData.getUserid(),
+                        tokenData.getCompanyid(), 1, voidstatus, invstatus, pagable);
             }
             return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatus(tokenData.getUserid(),
                     tokenData.getCompanyid(), 1, voidstatus, pagable);
@@ -102,14 +225,33 @@ public class InvActivityService {
             s = s.replaceAll("\"", "");
             if (voidstatus == 2) {
                 if (fromdate != null && todate != null) {
+                    if (!invstatus.equals("all")) {
+                        return iaRepo
+                                .findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomername(
+                                        tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus,
+                                        s, tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate,
+                                        invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate,
+                                        todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
+                                        fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(),
+                                        1, fromdate, todate, invstatus, s, pagable);
+                    }
                     return iaRepo
-                            .findByUseridAndCompanyidAndStatusAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(
+                            .findByUseridAndCompanyidAndStatusAndDateBetweenAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                     tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                }
+                if (!invstatus.equals("all")) {
+                    return iaRepo
+                            .findByUseridAndCompanyidAndStatusAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndInvstatusAndCustomername(
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s, pagable);
                 }
                 return iaRepo
                         .findByUseridAndCompanyidAndStatusAndActivityrefOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndVouchercodeOrUseridAndCompanyidAndStatusAndCustomernameOrUseridAndCompanyidAndStatusAndInvstatus(
@@ -120,6 +262,17 @@ public class InvActivityService {
                                 pagable);
             }
             if (fromdate != null && todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo
+                            .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomername(
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
+                                    invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus,
+                                    fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
+                                    voidstatus, fromdate, todate, invstatus, s, tokenData.getUserid(),
+                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
+                                    invstatus, s, pagable);
+                }
                 return iaRepo
                         .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
@@ -129,6 +282,15 @@ public class InvActivityService {
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                                 pagable);
+            }
+            if (!invstatus.equals("all")) {
+                return iaRepo
+                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomername(
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s, pagable);
             }
             return iaRepo
                     .findByUseridAndCompanyidAndStatusAndVoidstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndCustomernameOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatus(
@@ -140,6 +302,16 @@ public class InvActivityService {
         }
         if (voidstatus == 2) {
             if (fromdate != null & todate != null) {
+                if (!invstatus.equals("all")) {
+                    return iaRepo
+                            .findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomernameContaining(
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
+                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
+                                    pagable);
+                }
                 return iaRepo
                         .findByUseridAndCompanyidAndStatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusContaining(
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
@@ -148,6 +320,15 @@ public class InvActivityService {
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
                                 tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+            }
+            if (!invstatus.equals("all")) {
+                return iaRepo
+                        .findByUseridAndCompanyidAndStatusAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndInvstatusAndCustomernameContaining(
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, invstatus, s, pagable);
             }
             return iaRepo
                     .findByUseridAndCompanyidAndStatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndCustomernameContainingOrUseridAndCompanyidAndStatusAndInvstatusContaining(
@@ -158,6 +339,16 @@ public class InvActivityService {
                             pagable);
         }
         if (fromdate != null && todate != null) {
+            if (!invstatus.equals("all")) {
+                return iaRepo
+                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomernameContaining(
+                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
+                                invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate,
+                                todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus,
+                                fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
+                                voidstatus, fromdate, todate, invstatus, s, tokenData.getUserid(),
+                                tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s, pagable);
+            }
             return iaRepo
                     .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusContaining(
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
@@ -167,6 +358,15 @@ public class InvActivityService {
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
                             pagable);
+        }
+        if (!invstatus.equals("all")) {
+            return iaRepo
+                    .findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomernameContaining(
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
+                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s, pagable);
         }
         return iaRepo
                 .findByUseridAndCompanyidAndStatusAndVoidstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndCustomernameContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusContaining(
