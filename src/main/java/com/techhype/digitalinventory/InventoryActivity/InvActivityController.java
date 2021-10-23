@@ -107,7 +107,7 @@ public class InvActivityController {
 
             return ResponseEntity.ok().body(BaseResponse.ok(totals));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+            return ResponseEntity.ok().body(BaseResponse.ok(new IAFilterTotalDto(0, 0)));
         }
     }
 
