@@ -4,6 +4,7 @@ public class ServerMessage {
     public static String OK = "Successful";
     public static String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static String NOT_FOUND = "Not Found";
+    public static String UNAUTHORIZED = "Unauthorized";
 
     public static String Created(String ref) {
         return buildMessage("created", ref);

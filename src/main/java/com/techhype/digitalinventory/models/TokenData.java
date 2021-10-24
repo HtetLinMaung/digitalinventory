@@ -1,13 +1,58 @@
 package com.techhype.digitalinventory.models;
 
 public class TokenData {
+    private String iamtoken;
+    private String token;
     private String userid = "admin";
     private String username = "admin";
     private String companyid = "techhype";
     private String companyname = "techhype";
+    private String profile;
+    private String role;
+    private String shopname;
 
     public String getUserid() {
         return userid;
+    }
+
+    public String getShopname() {
+        return shopname;
+    }
+
+    public void setShopname(String shopname) {
+        this.shopname = shopname;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getProfile() {
+        return profile;
+    }
+
+    public void setProfile(String profile) {
+        this.profile = profile;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getIamtoken() {
+        return iamtoken;
+    }
+
+    public void setIamtoken(String iamtoken) {
+        this.iamtoken = iamtoken;
     }
 
     public void setUserid(String userid) {
