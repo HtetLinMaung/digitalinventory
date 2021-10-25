@@ -7,7 +7,10 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techhype.digitalinventory.models.TokenData;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.JwtException;
@@ -25,7 +28,8 @@ public class JwtTokenUtil implements Serializable {
 
     public String generateToken(TokenData tokenData) throws IOException {
         return Jwts.builder().setSubject(new ObjectMapper().writeValueAsString(tokenData))
-                .setIssuedAt(new Date(System.currentTimeMillis())).setExpiration(new Date(System.currentTimeMillis()))
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes())).compact();
     }
 

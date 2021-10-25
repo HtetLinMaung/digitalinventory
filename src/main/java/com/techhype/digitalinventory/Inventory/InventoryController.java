@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.techhype.digitalinventory.constants.ServerMessage;
 import com.techhype.digitalinventory.constants.ServerStatus;
+import com.techhype.digitalinventory.middlewares.AuthMiddleware;
 import com.techhype.digitalinventory.models.BaseResponse;
 import com.techhype.digitalinventory.models.PaginationResponse;
 import com.techhype.digitalinventory.models.TokenData;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,10 +29,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "api/v1/inventories")
 public class InventoryController {
     private InventoryService iService;
+    private AuthMiddleware authMiddleware;
 
     @Autowired
-    public InventoryController(InventoryService iService) {
+    public InventoryController(InventoryService iService, AuthMiddleware authMiddleware) {
         this.iService = iService;
+        this.authMiddleware = authMiddleware;
     }
 
     @GetMapping(path = "{itemref}")
@@ -88,10 +92,14 @@ public class InventoryController {
     @GetMapping
     public ResponseEntity<BaseResponse> getInventories(@RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page, @RequestParam int perpage,
-            @RequestParam(defaultValue = "createddate") String sortby,
-            @RequestParam(defaultValue = "1") String reverse) {
+            @RequestParam(defaultValue = "createddate") String sortby, @RequestParam(defaultValue = "1") String reverse,
+            @RequestHeader("Authorization") String authorization) {
         try {
-            var invpage = iService.getInventories(search, page, perpage, sortby, reverse, new TokenData());
+            var auth = authMiddleware.checkToken(authorization);
+            if (!auth.isAuth()) {
+                return auth.getResponse();
+            }
+            var invpage = iService.getInventories(search, page, perpage, sortby, reverse, auth.getTokenData());
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());

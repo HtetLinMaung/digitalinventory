@@ -44,7 +44,7 @@ public class AuthController {
             }
             var json = new ObjectMapper().writeValueAsString(response.get("data"));
             var tData = new ObjectMapper().readValue(json, TokenData.class);
-            var token = jwt.generateToken(tokenData);
+            var token = jwt.generateToken(tData);
             tData.setToken(token);
             return ResponseEntity.ok().body(BaseResponse.ok(tData));
         } catch (Exception e) {

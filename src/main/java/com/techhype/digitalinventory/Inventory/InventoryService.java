@@ -97,20 +97,45 @@ public class InventoryService {
 
     public Page<Inventory> getInventories(String search, int page, int perpage, String sortby, String reverse,
             TokenData tokenData) {
+        String role = tokenData.getRole();
         var pagable = PageRequest.of(page - 1, perpage,
                 Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
         if (search == null || search.isEmpty()) {
+            if (role.equals("admin")) {
+                return iRepo.findByCompanyidAndStatus(tokenData.getCompanyid(), 1, pagable);
+            } else if (role.equals("superadmin")) {
+                return iRepo.findByStatus(1, pagable);
+            }
             return iRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1, pagable);
         }
 
         String s = search.trim();
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
+            if (role.equals("admin")) {
+                return iRepo
+                        .findByCompanyidAndStatusAndItemrefOrCompanyidAndStatusAndItemcodeOrCompanyidAndStatusAndLabelOrCompanyidAndStatusAndTag(
+                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
+                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, pagable);
+            } else if (role.equals("superadmin")) {
+                return iRepo.findByStatusAndItemrefOrStatusAndItemcodeOrStatusAndLabelOrStatusAndTag(1, s, 1, s, 1, s,
+                        1, s, pagable);
+            }
             return iRepo
                     .findByUseridAndCompanyidAndStatusAndItemrefOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndTag(
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
                             tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
                             tokenData.getUserid(), tokenData.getCompanyid(), 1, s, pagable);
+        }
+        if (role.equals("admin")) {
+            return iRepo
+                    .findByCompanyidAndStatusAndItemrefContainingOrCompanyidAndStatusAndItemcodeContainingOrCompanyidAndStatusAndLabelContainingOrCompanyidAndStatusAndTagContaining(
+                            tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1,
+                            s, tokenData.getCompanyid(), 1, s, pagable);
+        } else if (role.equals("superadmin")) {
+            return iRepo
+                    .findByStatusAndItemrefContainingOrStatusAndItemcodeContainingOrStatusAndLabelContainingOrStatusAndTagContaining(
+                            1, s, 1, s, 1, s, 1, s, pagable);
         }
         return iRepo
                 .findByUseridAndCompanyidAndStatusAndItemrefContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndTagContaining(
