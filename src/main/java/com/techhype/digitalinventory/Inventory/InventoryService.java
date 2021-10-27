@@ -1,9 +1,13 @@
 package com.techhype.digitalinventory.Inventory;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techhype.digitalinventory.InventoryActivity.IInvActivityRepository;
 import com.techhype.digitalinventory.models.TokenData;
 
@@ -25,6 +29,12 @@ public class InventoryService {
     }
 
     public Optional<Inventory> getInventoryByItemRef(String itemref, TokenData tokenData) {
+        String role = tokenData.getRole();
+        if (role.equals("admin")) {
+            return iRepo.findByItemrefAndCompanyidAndStatus(itemref, tokenData.getCompanyid(), 1);
+        } else if (role.equals("superadmin")) {
+            return iRepo.findByItemrefAndStatus(itemref, 1);
+        }
         return iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
                 tokenData.getCompanyid(), 1);
     }
@@ -145,6 +155,35 @@ public class InventoryService {
     }
 
     public List<InventoryDto> getInventoriesForCombo(TokenData tokenData) {
+        String role = tokenData.getRole();
+        if (role.equals("admin")) {
+            return iRepo.findByCompanyidAndStatus(tokenData.getCompanyid(), 1);
+        } else if (role.equals("superadmin")) {
+            return iRepo.findByStatus(1);
+        }
         return iRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1);
+    }
+
+    public List<Inventory> importInventories(List<Map<String, Object>> exceldata, TokenData tokenData)
+            throws JsonProcessingException {
+        List<Inventory> inventories = new ArrayList<>();
+        for (var data : exceldata) {
+            var now = LocalDateTime.now();
+            data.remove("no");
+            var json = new ObjectMapper().writeValueAsString(data);
+            var inventory = new ObjectMapper().readValue(json, Inventory.class);
+            inventory.setUserid(tokenData.getUserid());
+            inventory.setUsername(tokenData.getUsername());
+            inventory.setCompanyid(tokenData.getCompanyid());
+            inventory.setCompanyname(tokenData.getCompanyname());
+            inventory.setCreateddate(now);
+            inventory.setModifieddate(now);
+            inventory.setRemaining(inventory.getCounts());
+            inventory.setNetprice(inventory.getPrice());
+            var newInv = iRepo.save(inventory);
+            newInv.setItemref(String.format("I%06d", newInv.getId()));
+            inventories.add(iRepo.save(newInv));
+        }
+        return inventories;
     }
 }

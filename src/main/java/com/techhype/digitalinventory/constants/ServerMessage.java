@@ -5,6 +5,7 @@ public class ServerMessage {
     public static String INTERNAL_SERVER_ERROR = "Internal Server Error";
     public static String NOT_FOUND = "Not Found";
     public static String UNAUTHORIZED = "Unauthorized";
+    public static String BAD_REQUEST = "Bad Request";
 
     public static String Created(String ref) {
         return buildMessage("created", ref);

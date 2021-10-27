@@ -6,4 +6,5 @@ public class ServerStatus {
     public static int CREATED = 201;
     public static int NOT_FOUND = 404;
     public static int UNAUTHORIZED = 401;
+    public static int BAD_REQUEST = 400;
 }
