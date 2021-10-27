@@ -35,7 +35,7 @@ public class AuthController {
         try {
             var body = new HashMap<String, Object>();
             body.put("token", tokenData.getIamtoken());
-            var response = RestClient.post("http://localhost/iam/auth/check-token", body, new HashMap<>());
+            var response = RestClient.post("http://150.95.82.125/iam/auth/check-token", body, new HashMap<>());
 
             if (!response.get("code").equals(200)) {
                 return new ResponseEntity<BaseResponse>(
