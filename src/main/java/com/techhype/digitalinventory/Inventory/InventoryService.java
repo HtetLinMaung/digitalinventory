@@ -170,6 +170,10 @@ public class InventoryService {
         for (var data : exceldata) {
             var now = LocalDateTime.now();
             data.remove("no");
+            var counts = (String) data.get("counts");
+            if (counts != null && !counts.isEmpty()) {
+                data.put("counts", Integer.parseInt(counts.split("\\.")[0]));
+            }
             var json = new ObjectMapper().writeValueAsString(data);
             var inventory = new ObjectMapper().readValue(json, Inventory.class);
             inventory.setUserid(tokenData.getUserid());
@@ -180,6 +184,7 @@ public class InventoryService {
             inventory.setModifieddate(now);
             inventory.setRemaining(inventory.getCounts());
             inventory.setNetprice(inventory.getPrice());
+            inventory.setItemcode(inventory.getItemcode().split("\\.")[0]);
             var newInv = iRepo.save(inventory);
             newInv.setItemref(String.format("I%06d", newInv.getId()));
             inventories.add(iRepo.save(newInv));
