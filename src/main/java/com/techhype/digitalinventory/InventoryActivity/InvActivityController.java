@@ -76,7 +76,7 @@ public class InvActivityController {
             }
             return ResponseEntity.ok().body(BaseResponse.ok(iaService.getRemaining(itemref, auth.getTokenData())));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+            return ResponseEntity.ok().body(BaseResponse.ok(0));
         }
     }
 
@@ -117,7 +117,7 @@ public class InvActivityController {
                 return new ResponseEntity<>(new BaseResponse(ServerStatus.BAD_REQUEST, "Can't read excel file.", null),
                         HttpStatus.BAD_REQUEST);
             }
-            var headers = List.of("no", "itemref", "qty", "vouchercode", "customername", "date", "status", "remark");
+            var headers = List.of("no", "itemref", "qty", "vouchercode", "customername", "date", "invstatus", "remark");
             var exceldata = ExcelUtils.excelToDataList(dto.getFile(), headers);
             var invactivities = iaService.importInvActivies(exceldata, auth.getTokenData());
             return ResponseEntity.ok(BaseResponse.ok(invactivities));

@@ -1,6 +1,7 @@
 package com.techhype.digitalinventory.InventoryActivity;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -929,34 +930,63 @@ public class InvActivityService {
         for (var data : exceldata) {
             var now = LocalDateTime.now();
             data.remove("no");
+            var qty = (String) data.get("qty");
+            if (qty != null && !qty.isEmpty()) {
+                data.put("qty", Integer.parseInt(qty.split("\\.")[0]));
+            }
+            LocalDateTime date = null;
+            var datestr = (String) data.get("date");
+            if (!datestr.isEmpty() && datestr.contains("/")) {
+                var datearr = datestr.split("/");
+                if (datearr.length == 3) {
+                    var day = Integer.parseInt(datearr[1]);
+                    var month = Integer.parseInt(datearr[0]);
+                    var year = Integer.parseInt(datearr[2]);
+
+                    date = LocalDateTime.of(year, month, day, 0, 0, 0, 0);
+                    data.remove("date");
+                }
+            }
             var json = new ObjectMapper().writeValueAsString(data);
             var invactivity = new ObjectMapper().readValue(json, InventoryActivity.class);
+            invactivity.setItemref(invactivity.getItemref().trim());
+
+            var inventory = new Inventory();
+            Optional<Inventory> invopt = Optional.empty();
+            switch (role) {
+            case "normaluser":
+                invopt = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(invactivity.getItemref(),
+                        tokenData.getUserid(), tokenData.getCompanyid(), 1);
+                break;
+            case "admin":
+                invopt = iRepo.findByItemrefAndCompanyidAndStatus(invactivity.getItemref(), tokenData.getCompanyid(),
+                        1);
+                break;
+            case "superadmin":
+                invopt = iRepo.findByItemrefAndStatus(invactivity.getItemref(), 1);
+                break;
+            }
+            invactivity.setInvstatus(invactivity.getInvstatus().toLowerCase().trim());
+
+            if (!invopt.isPresent() || !List.of("out", "in", "reject").contains(invactivity.getInvstatus())) {
+                continue;
+            }
+            inventory = invopt.get();
+
+            invactivity.setDate(date);
+
             invactivity.setUserid(tokenData.getUserid());
             invactivity.setUsername(tokenData.getUsername());
             invactivity.setCompanyid(tokenData.getCompanyid());
             invactivity.setCompanyname(tokenData.getCompanyname());
             invactivity.setCreateddate(now);
             invactivity.setModifieddate(now);
-            invactivity.setLabel("");
-            invactivity.setPrice(0);
-            invactivity.setAmount(0);
+            invactivity.setItemcode(inventory.getItemcode());
+            invactivity.setLabel(inventory.getLabel());
+            invactivity.setPrice(inventory.getPrice());
+            invactivity.setAmount(invactivity.getQty() * invactivity.getPrice());
             var newinvactivity = iaRepo.save(invactivity);
             newinvactivity.setActivityref(newinvactivity.getItemref() + "-" + String.valueOf(newinvactivity.getId()));
-            var inventory = new Inventory();
-            switch (role) {
-            case "normaluser":
-                inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(newinvactivity.getItemref(),
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1).get();
-                break;
-            case "admin":
-                inventory = iRepo
-                        .findByItemrefAndCompanyidAndStatus(newinvactivity.getItemref(), tokenData.getCompanyid(), 1)
-                        .get();
-                break;
-            case "superadmin":
-                inventory = iRepo.findByItemrefAndStatus(newinvactivity.getItemref(), 1).get();
-                break;
-            }
 
             switch (newinvactivity.getInvstatus()) {
             case "in":
@@ -968,10 +998,6 @@ public class InvActivityService {
                 break;
             }
             iRepo.save(inventory);
-            newinvactivity.setItemcode(inventory.getItemcode());
-            newinvactivity.setLabel(inventory.getLabel());
-            newinvactivity.setPrice(inventory.getPrice());
-            newinvactivity.setAmount(newinvactivity.getQty() * newinvactivity.getPrice());
             invactivities.add(iaRepo.save(newinvactivity));
         }
         return invactivities;
