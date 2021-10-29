@@ -42,6 +42,9 @@ public class Inventory {
     private int remaining = 0;
     private String tag = "";
 
+    @Column(name = "minthreshold", nullable = false, columnDefinition = "int4 default 10")
+    private int minthreshold = 10;
+
     @Column(name = "status", nullable = false, columnDefinition = "int4 default 1")
     private int status = 1;
 
@@ -64,6 +67,14 @@ public class Inventory {
     private LocalDateTime modifieddate;
 
     public Inventory() {
+    }
+
+    public int getMinthreshold() {
+        return minthreshold;
+    }
+
+    public void setMinthreshold(int minthreshold) {
+        this.minthreshold = minthreshold;
     }
 
     public String getCompanyid() {

@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techhype.digitalinventory.InventoryActivity.ActivityTotalDto;
 import com.techhype.digitalinventory.InventoryActivity.IInvActivityRepository;
 import com.techhype.digitalinventory.models.TokenData;
 
@@ -40,10 +41,27 @@ public class InventoryService {
     }
 
     public int getRemaining(String itemref, TokenData tokenData) {
-        var inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
-                tokenData.getCompanyid(), 1).get();
+        String role = tokenData.getRole();
+        var inventory = new Inventory();
+        List<ActivityTotalDto> totals = new ArrayList<>();
+        switch (role) {
+        case "normaluser":
+            inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
+                    tokenData.getCompanyid(), 1).get();
+            totals = iaRepo.getTotalsByItemref(tokenData.getUserid(), tokenData.getCompanyid(), itemref);
+            break;
+        case "admin":
+            inventory = iRepo.findByItemrefAndCompanyidAndStatus(itemref, tokenData.getCompanyid(), 1).get();
+            totals = iaRepo.getTotalsByItemref(tokenData.getCompanyid(), itemref);
+            break;
+        case "superadmin":
+            inventory = iRepo.findByItemrefAndStatus(itemref, 1).get();
+            totals = iaRepo.getTotalsByItemref(itemref);
+            break;
+        }
+
         int remaining = inventory.getCounts();
-        var totals = iaRepo.getTotalsByItemref(tokenData.getUserid(), tokenData.getCompanyid(), itemref);
+
         for (var total : totals) {
             switch (total.getInvstatus()) {
             case "out":
@@ -75,6 +93,7 @@ public class InventoryService {
         oldinventory.setTag(inventory.getTag());
         oldinventory.setCounts(inventory.getCounts());
         oldinventory.setRemaining(getRemaining(itemref, tokenData));
+        oldinventory.setMinthreshold(inventory.getMinthreshold());
         iRepo.save(oldinventory);
         return true;
     }
