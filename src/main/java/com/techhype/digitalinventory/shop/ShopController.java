@@ -42,6 +42,11 @@ public class ShopController {
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
             var shop = sService.getShopByShopid(shopid, auth.getTokenData());
             if (!shop.isPresent()) {
                 return new ResponseEntity<>(BaseResponse.notFound(), HttpStatus.NOT_FOUND);
@@ -60,6 +65,11 @@ public class ShopController {
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
             var newshop = sService.addShop(shop, auth.getTokenData());
             var ref = newshop.getShopid();
             return new ResponseEntity<>(new BaseResponse(ServerStatus.CREATED, ServerMessage.Created(ref), newshop),
@@ -76,6 +86,11 @@ public class ShopController {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
+            }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
             }
             var success = sService.updateShop(shopid, shop, auth.getTokenData());
             if (!success) {
@@ -94,6 +109,11 @@ public class ShopController {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
+            }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
             }
             var success = sService.softDeleteShop(shopid, auth.getTokenData());
 
@@ -116,6 +136,11 @@ public class ShopController {
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
             var shoppage = sService.getShops(search, page, perpage, sortby, reverse, auth.getTokenData());
             var body = new PaginationResponse();
             body.setData(shoppage.getContent());
@@ -129,4 +154,46 @@ public class ShopController {
         }
     }
 
+    @PostMapping(path = "maps")
+    public ResponseEntity<BaseResponse> mapShopWithUserid(@RequestBody ShopMap shopMap,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            var auth = authMiddleware.checkToken(authorization);
+            if (!auth.isAuth()) {
+                return auth.getResponse();
+            }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
+            sService.mapShopWithUserid(shopMap, auth.getTokenData());
+            return ResponseEntity.ok().body(BaseResponse.ok(null));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
+
+    @GetMapping(path = "maps/{userid}")
+    public ResponseEntity<BaseResponse> getShopMapByUserid(@PathVariable String userid,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            var auth = authMiddleware.checkToken(authorization);
+            if (!auth.isAuth()) {
+                return auth.getResponse();
+            }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
+            var shopMap = sService.getShopMapByUserid(userid, auth.getTokenData());
+            if (!shopMap.isPresent()) {
+                return new ResponseEntity<>(BaseResponse.notFound(), HttpStatus.NOT_FOUND);
+            }
+            return ResponseEntity.ok().body(BaseResponse.ok(shopMap));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
 }

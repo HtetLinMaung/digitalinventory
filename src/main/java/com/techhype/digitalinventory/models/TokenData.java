@@ -9,9 +9,18 @@ public class TokenData {
     private String companyname;
     private String role;
     private String shopname;
+    private String shopid;
 
     public String getUserid() {
         return userid;
+    }
+
+    public String getShopid() {
+        return shopid;
+    }
+
+    public void setShopid(String shopid) {
+        this.shopid = shopid;
     }
 
     public String getShopname() {

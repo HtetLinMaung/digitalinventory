@@ -22,6 +22,9 @@ public class ShopMap {
     @Column(name = "shopid", nullable = false)
     private String shopid;
 
+    @Column(name = "shopname", nullable = false)
+    private String shopname;
+
     @Column(name = "userref", nullable = false)
     private String userref;
 
@@ -45,4 +48,96 @@ public class ShopMap {
 
     @Column(name = "modifieddate", nullable = false, columnDefinition = "timestamp default now()")
     private LocalDateTime modifieddate;
+
+    public ShopMap() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getShopid() {
+        return shopid;
+    }
+
+    public void setShopid(String shopid) {
+        this.shopid = shopid;
+    }
+
+    public String getShopname() {
+        return shopname;
+    }
+
+    public void setShopname(String shopname) {
+        this.shopname = shopname;
+    }
+
+    public String getUserref() {
+        return userref;
+    }
+
+    public void setUserref(String userref) {
+        this.userref = userref;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+    public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getCompanyid() {
+        return companyid;
+    }
+
+    public void setCompanyid(String companyid) {
+        this.companyid = companyid;
+    }
+
+    public String getCompanyname() {
+        return companyname;
+    }
+
+    public void setCompanyname(String companyname) {
+        this.companyname = companyname;
+    }
+
+    public LocalDateTime getCreateddate() {
+        return createddate;
+    }
+
+    public void setCreateddate(LocalDateTime createddate) {
+        this.createddate = createddate;
+    }
+
+    public LocalDateTime getModifieddate() {
+        return modifieddate;
+    }
+
+    public void setModifieddate(LocalDateTime modifieddate) {
+        this.modifieddate = modifieddate;
+    }
+
 }

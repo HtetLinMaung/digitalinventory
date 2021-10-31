@@ -7,6 +7,7 @@ import com.techhype.digitalinventory.constants.ServerMessage;
 import com.techhype.digitalinventory.constants.ServerStatus;
 import com.techhype.digitalinventory.models.BaseResponse;
 import com.techhype.digitalinventory.models.TokenData;
+import com.techhype.digitalinventory.shop.ShopService;
 import com.techhype.digitalinventory.utils.JwtTokenUtil;
 import com.techhype.digitalinventory.utils.RestClient;
 
@@ -24,10 +25,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "api/v1/auth")
 public class AuthController {
     private JwtTokenUtil jwt;
+    private ShopService sService;
 
     @Autowired
-    public AuthController(JwtTokenUtil jwt) {
+    public AuthController(JwtTokenUtil jwt, ShopService sService) {
         this.jwt = jwt;
+        this.sService = sService;
     }
 
     @PostMapping(path = "get-app-token")
@@ -44,6 +47,12 @@ public class AuthController {
             }
             var json = new ObjectMapper().writeValueAsString(response.get("data"));
             var tData = new ObjectMapper().readValue(json, TokenData.class);
+            var shopmap = sService.getShopMapByUserid(tData.getUserid(), tData);
+            if (shopmap.isPresent()) {
+                var sm = shopmap.get();
+                tData.setShopid(sm.getShopid());
+                tData.setShopname(sm.getShopname());
+            }
             var token = jwt.generateToken(tData);
             tData.setToken(token);
             return ResponseEntity.ok().body(BaseResponse.ok(tData));

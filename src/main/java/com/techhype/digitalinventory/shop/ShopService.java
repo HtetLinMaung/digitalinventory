@@ -99,4 +99,33 @@ public class ShopService {
             return isRepo.findByStatusAndShopidContainingOrStatusAndShopnameContaining(1, s, 1, s, pagable);
         }
     }
+
+    public Optional<ShopMap> getShopMapByUserid(String userid, TokenData tokenData) {
+        var role = tokenData.getRole();
+        if (role.equals("admin")) {
+            return ismRepo.findByUserrefAndCompanyidAndStatus(userid, tokenData.getCompanyid(), 1);
+        } else {
+            return ismRepo.findByUserrefAndStatus(userid, 1);
+        }
+    }
+
+    public boolean mapShopWithUserid(ShopMap shopMap, TokenData tokenData) {
+        var now = LocalDateTime.now();
+        var data = getShopMapByUserid(shopMap.getUserref(), tokenData);
+        if (data.isPresent()) {
+            var old = data.get();
+            old.setStatus(0);
+            old.setModifieddate(now);
+            ismRepo.save(old);
+        }
+        shopMap.setId(null);
+        shopMap.setCreateddate(now);
+        shopMap.setModifieddate(now);
+        shopMap.setUserid(tokenData.getUserid());
+        shopMap.setUsername(tokenData.getUsername());
+        shopMap.setCompanyid(tokenData.getCompanyid());
+        shopMap.setCompanyname(tokenData.getCompanyname());
+        ismRepo.save(shopMap);
+        return true;
+    }
 }

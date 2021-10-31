@@ -32,15 +32,27 @@ public class InvActivityService {
     }
 
     public InventoryActivity addInventoryActivity(InventoryActivity inventoryActivity, TokenData tokenData) {
-        String role = tokenData.getRole();
+        var role = tokenData.getRole();
         var now = LocalDateTime.now();
+
+        switch (role) {
+        case "admin":
+            inventoryActivity.setCompanyid(tokenData.getCompanyid());
+            inventoryActivity.setCompanyname(tokenData.getCompanyname());
+            break;
+        case "normaluser":
+            inventoryActivity.setCompanyid(tokenData.getCompanyid());
+            inventoryActivity.setCompanyname(tokenData.getCompanyname());
+            inventoryActivity.setShopid(tokenData.getShopid());
+            inventoryActivity.setShopname(tokenData.getShopname());
+            break;
+        }
+
         inventoryActivity.setId(null);
         inventoryActivity.setCreateddate(now);
         inventoryActivity.setModifieddate(now);
         inventoryActivity.setUserid(tokenData.getUserid());
         inventoryActivity.setUsername(tokenData.getUsername());
-        inventoryActivity.setCompanyid(tokenData.getCompanyid());
-        inventoryActivity.setCompanyname(tokenData.getCompanyname());
         inventoryActivity.setAmount(inventoryActivity.getQty() * inventoryActivity.getPrice());
         ;
         var newinvactivity = iaRepo.save(inventoryActivity);

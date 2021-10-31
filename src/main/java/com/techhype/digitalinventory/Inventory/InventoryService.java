@@ -78,6 +78,7 @@ public class InventoryService {
 
     public boolean updateInventory(String itemref, Inventory inventory, TokenData tokenData) {
         var oldinv = getInventoryByItemRef(itemref, tokenData);
+        var role = tokenData.getRole();
         if (!oldinv.isPresent()) {
             return false;
         }
@@ -94,6 +95,18 @@ public class InventoryService {
         oldinventory.setCounts(inventory.getCounts());
         oldinventory.setRemaining(getRemaining(itemref, tokenData));
         oldinventory.setMinthreshold(inventory.getMinthreshold());
+        switch (role) {
+        case "admin":
+            oldinventory.setShopid(inventory.getShopid());
+            oldinventory.setShopname(inventory.getShopname());
+            break;
+        case "superadmin":
+            oldinventory.setCompanyid(inventory.getCompanyid());
+            oldinventory.setCompanyname(inventory.getCompanyname());
+            oldinventory.setShopid(inventory.getShopid());
+            oldinventory.setShopname(inventory.getShopname());
+        }
+
         iRepo.save(oldinventory);
         return true;
     }
@@ -111,14 +124,27 @@ public class InventoryService {
 
     public Inventory addInventory(Inventory inventory, TokenData tokenData) {
         var now = LocalDateTime.now();
+        var role = tokenData.getRole();
+        switch (role) {
+        case "admin":
+            inventory.setCompanyid(tokenData.getCompanyid());
+            inventory.setCompanyname(tokenData.getCompanyname());
+            break;
+        case "normaluser":
+            inventory.setCompanyid(tokenData.getCompanyid());
+            inventory.setCompanyname(tokenData.getCompanyname());
+            inventory.setShopid(tokenData.getShopid());
+            inventory.setShopname(tokenData.getShopname());
+            break;
+        }
+
         inventory.setId(null);
         inventory.setCreateddate(now);
         inventory.setModifieddate(now);
         inventory.setRemaining(inventory.getCounts());
         inventory.setUserid(tokenData.getUserid());
         inventory.setUsername(tokenData.getUsername());
-        inventory.setCompanyid(tokenData.getCompanyid());
-        inventory.setCompanyname(tokenData.getCompanyname());
+
         var newInv = iRepo.save(inventory);
         newInv.setItemref(String.format("I%06d", newInv.getId()));
         return iRepo.save(newInv);

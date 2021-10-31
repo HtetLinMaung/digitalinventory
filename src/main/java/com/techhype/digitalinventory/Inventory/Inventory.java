@@ -60,6 +60,12 @@ public class Inventory {
     @Column(name = "companyname", nullable = false)
     private String companyname;
 
+    @Column(name = "shopid", columnDefinition = "varchar(255) default ''")
+    private String shopid;
+
+    @Column(name = "shopname", columnDefinition = "varchar(255) default ''")
+    private String shopname;
+
     @Column(name = "createddate", nullable = false, columnDefinition = "timestamp default now()")
     private LocalDateTime createddate;
 
@@ -83,6 +89,22 @@ public class Inventory {
 
     public void setCompanyid(String companyid) {
         this.companyid = companyid;
+    }
+
+    public String getShopid() {
+        return shopid;
+    }
+
+    public void setShopid(String shopid) {
+        this.shopid = shopid;
+    }
+
+    public String getShopname() {
+        return shopname;
+    }
+
+    public void setShopname(String shopname) {
+        this.shopname = shopname;
     }
 
     public String getCompanyname() {
