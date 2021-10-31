@@ -14,8 +14,8 @@ import javax.persistence.Table;
 @Table
 public class ShopMap {
     @Id
-    @SequenceGenerator(name = "shop_sequence", sequenceName = "shop_sequence", allocationSize = 1)
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inventory_activity_sequence")
+    @SequenceGenerator(name = "shop_map_sequence", sequenceName = "shop_map_sequence", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "shop_map_sequence")
     @Column(name = "id", updatable = false)
     private Long id;
 
