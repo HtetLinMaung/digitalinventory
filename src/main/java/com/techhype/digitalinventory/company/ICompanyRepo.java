@@ -11,13 +11,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ICompanyRepo extends JpaRepository<Company, Long> {
-    @Query("select c from Company c where status = 1 and (companyid = :companyid or companyname = :companyname)")
-    Page<Company> findCompany(@Param("companyid") String companyid, @Param("companyname") String companyname,
-            Pageable pagable);
+    @Query("select c from Company c where status = 1 and (companyid = :search or companyname = :search)")
+    Page<Company> findCompany(@Param("search") String search, Pageable pagable);
 
-    @Query("select c from Company c where status = 1 and (companyid like %:companyid% or companyname like %:companyname%)")
-    Page<Company> findCompanyWithContain(@Param("companyid") String companyid, @Param("companyname") String companyname,
-            Pageable pagable);
+    @Query("select c from Company c where status = 1 and (companyid like %:search% or companyname like %:search%)")
+    Page<Company> findCompanyWithContain(@Param("search") String search, Pageable pagable);
 
     Page<Company> findByStatus(int status, Pageable pagable);
 

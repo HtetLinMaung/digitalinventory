@@ -60,8 +60,8 @@ public class InvActivityService {
         var inventory = new Inventory();
         switch (role) {
         case "normaluser":
-            inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(newinvactivity.getItemref(),
-                    tokenData.getUserid(), tokenData.getCompanyid(), 1).get();
+            inventory = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(newinvactivity.getItemref(),
+                    tokenData.getShopid(), tokenData.getCompanyid(), 1).get();
             break;
         case "admin":
             inventory = iRepo
@@ -92,7 +92,7 @@ public class InvActivityService {
         List<ActivityTotalDto> totals = new ArrayList<>();
         switch (role) {
         case "normaluser":
-            inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
+            inventory = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(itemref, tokenData.getShopid(),
                     tokenData.getCompanyid(), 1).get();
             totals = iaRepo.getTotalsByItemref(tokenData.getUserid(), tokenData.getCompanyid(), itemref);
             break;
@@ -913,7 +913,7 @@ public class InvActivityService {
         var inv = new Inventory();
         switch (role) {
         case "normaluser":
-            inv = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(ia.getItemref(), tokenData.getUserid(),
+            inv = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(ia.getItemref(), tokenData.getShopid(),
                     tokenData.getCompanyid(), 1).get();
             break;
         case "admin":
@@ -967,8 +967,8 @@ public class InvActivityService {
             Optional<Inventory> invopt = Optional.empty();
             switch (role) {
             case "normaluser":
-                invopt = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(invactivity.getItemref(),
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1);
+                invopt = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(invactivity.getItemref(),
+                        tokenData.getShopid(), tokenData.getCompanyid(), 1);
                 break;
             case "admin":
                 invopt = iRepo.findByItemrefAndCompanyidAndStatus(invactivity.getItemref(), tokenData.getCompanyid(),

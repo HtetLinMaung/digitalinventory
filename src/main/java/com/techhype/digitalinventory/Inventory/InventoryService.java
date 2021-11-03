@@ -36,7 +36,7 @@ public class InventoryService {
         } else if (role.equals("superadmin")) {
             return iRepo.findByItemrefAndStatus(itemref, 1);
         }
-        return iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
+        return iRepo.findByItemrefAndShopidAndCompanyidAndStatus(itemref, tokenData.getShopid(),
                 tokenData.getCompanyid(), 1);
     }
 
@@ -46,7 +46,7 @@ public class InventoryService {
         List<ActivityTotalDto> totals = new ArrayList<>();
         switch (role) {
         case "normaluser":
-            inventory = iRepo.findByItemrefAndUseridAndCompanyidAndStatus(itemref, tokenData.getUserid(),
+            inventory = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(itemref, tokenData.getShopid(),
                     tokenData.getCompanyid(), 1).get();
             totals = iaRepo.getTotalsByItemref(tokenData.getUserid(), tokenData.getCompanyid(), itemref);
             break;
@@ -161,42 +161,25 @@ public class InventoryService {
             } else if (role.equals("superadmin")) {
                 return iRepo.findByStatus(1, pagable);
             }
-            return iRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1, pagable);
+            return iRepo.findByShopidAndCompanyidAndStatus(tokenData.getShopid(), tokenData.getCompanyid(), 1, pagable);
         }
 
         String s = search.trim();
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
             if (role.equals("admin")) {
-                return iRepo
-                        .findByCompanyidAndStatusAndItemrefOrCompanyidAndStatusAndItemcodeOrCompanyidAndStatusAndLabelOrCompanyidAndStatusAndTag(
-                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
-                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, pagable);
+                return iRepo.findInventory(tokenData.getCompanyid(), s, pagable);
             } else if (role.equals("superadmin")) {
-                return iRepo.findByStatusAndItemrefOrStatusAndItemcodeOrStatusAndLabelOrStatusAndTag(1, s, 1, s, 1, s,
-                        1, s, pagable);
+                return iRepo.findInventory(s, pagable);
             }
-            return iRepo
-                    .findByUseridAndCompanyidAndStatusAndItemrefOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndTag(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, pagable);
+            return iRepo.findInventory(tokenData.getShopid(), tokenData.getCompanyid(), s, pagable);
         }
         if (role.equals("admin")) {
-            return iRepo
-                    .findByCompanyidAndStatusAndItemrefContainingOrCompanyidAndStatusAndItemcodeContainingOrCompanyidAndStatusAndLabelContainingOrCompanyidAndStatusAndTagContaining(
-                            tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1,
-                            s, tokenData.getCompanyid(), 1, s, pagable);
+            return iRepo.findInventoryWithContain(tokenData.getCompanyid(), s, pagable);
         } else if (role.equals("superadmin")) {
-            return iRepo
-                    .findByStatusAndItemrefContainingOrStatusAndItemcodeContainingOrStatusAndLabelContainingOrStatusAndTagContaining(
-                            1, s, 1, s, 1, s, 1, s, pagable);
+            return iRepo.findInventoryWithContain(s, pagable);
         }
-        return iRepo
-                .findByUseridAndCompanyidAndStatusAndItemrefContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndTagContaining(
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                        tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1, s, pagable);
+        return iRepo.findInventoryWithContain(tokenData.getShopid(), tokenData.getCompanyid(), s, pagable);
     }
 
     public List<InventoryDto> getInventoriesForCombo(TokenData tokenData) {
@@ -206,7 +189,7 @@ public class InventoryService {
         } else if (role.equals("superadmin")) {
             return iRepo.findByStatus(1);
         }
-        return iRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1);
+        return iRepo.findByShopidAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1);
     }
 
     public List<Inventory> importInventories(List<Map<String, Object>> exceldata, TokenData tokenData)

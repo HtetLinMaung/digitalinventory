@@ -130,7 +130,7 @@ public class ShopController {
     public ResponseEntity<BaseResponse> getShops(@RequestParam(required = false) String search,
             @RequestParam(defaultValue = "1") int page, @RequestParam int perpage,
             @RequestParam(defaultValue = "createddate") String sortby, @RequestParam(defaultValue = "1") String reverse,
-            @RequestHeader("Authorization") String authorization) {
+            @RequestParam String companyid, @RequestHeader("Authorization") String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
@@ -141,7 +141,7 @@ public class ShopController {
                         new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
                         HttpStatus.UNAUTHORIZED);
             }
-            var shoppage = sService.getShops(search, page, perpage, sortby, reverse, auth.getTokenData());
+            var shoppage = sService.getShops(search, page, perpage, sortby, reverse, companyid, auth.getTokenData());
             var body = new PaginationResponse();
             body.setData(shoppage.getContent());
             body.setPagecount(shoppage.getTotalPages());

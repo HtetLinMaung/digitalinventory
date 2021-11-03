@@ -43,9 +43,9 @@ public class CompanyService {
         String s = search.trim();
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
-            return cRepo.findCompany(s, s, pagable);
+            return cRepo.findCompany(s, pagable);
         }
-        return cRepo.findCompanyWithContain(s, s, pagable);
+        return cRepo.findCompanyWithContain(s, pagable);
     }
 
     public Company addCompany(Company company, TokenData tokenData) {

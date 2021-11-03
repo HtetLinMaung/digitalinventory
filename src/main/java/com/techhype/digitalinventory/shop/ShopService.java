@@ -33,13 +33,16 @@ public class ShopService {
 
     public Shop addShop(Shop shop, TokenData tokenData) {
         var now = LocalDateTime.now();
+        var role = tokenData.getRole();
         shop.setId(null);
         shop.setCreateddate(now);
         shop.setModifieddate(now);
         shop.setUserid(tokenData.getUserid());
         shop.setUsername(tokenData.getUsername());
-        shop.setCompanyid(tokenData.getCompanyid());
-        shop.setCompanyname(tokenData.getCompanyname());
+        if (!role.equals("superadmin")) {
+            shop.setCompanyid(tokenData.getCompanyid());
+            shop.setCompanyname(tokenData.getCompanyname());
+        }
         var newshop = isRepo.save(shop);
         newshop.setShopid(String.format("S%06d", newshop.getId()));
         return isRepo.save(newshop);
@@ -47,12 +50,17 @@ public class ShopService {
 
     public boolean updateShop(String shopid, Shop shop, TokenData tokenData) {
         var data = getShopByShopid(shopid, tokenData);
+        var role = tokenData.getRole();
         if (!data.isPresent()) {
             return false;
         }
         var oldshop = data.get();
         oldshop.setShopname(shop.getShopname());
         oldshop.setModifieddate(LocalDateTime.now());
+        if (role.equals("superadmin")) {
+            oldshop.setCompanyid(shop.getCompanyid());
+            oldshop.setCompanyname(shop.getCompanyname());
+        }
         isRepo.save(oldshop);
         return true;
     }
@@ -68,8 +76,12 @@ public class ShopService {
         return true;
     }
 
-    public Page<Shop> getShops(String search, int page, int perpage, String sortby, String reverse,
+    public Page<Shop> getShops(String search, int page, int perpage, String sortby, String reverse, String companyid,
             TokenData tokenData) {
+        var findbycompany = false;
+        if (companyid != null && !companyid.isEmpty()) {
+            findbycompany = true;
+        }
         var role = tokenData.getRole();
         var pagable = PageRequest.of(page - 1, perpage,
                 Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
@@ -78,6 +90,9 @@ public class ShopService {
             if (role.equals("admin")) {
                 return isRepo.findByCompanyidAndStatus(tokenData.getCompanyid(), 1, pagable);
             } else {
+                if (findbycompany) {
+                    return isRepo.findByCompanyidAndStatus(companyid, 1, pagable);
+                }
                 return isRepo.findByStatus(1, pagable);
             }
         }
@@ -86,17 +101,21 @@ public class ShopService {
         if (s.startsWith("\"") && s.endsWith("\"")) {
             s = s.replaceAll("\"", "");
             if (role.equals("admin")) {
-                return isRepo.findByCompanyidAndStatusAndShopidOrCompanyidAndStatusAndShopname(tokenData.getCompanyid(),
-                        1, s, tokenData.getCompanyid(), 1, s, pagable);
+                return isRepo.findCompany(tokenData.getCompanyid(), s, pagable);
             } else {
-                return isRepo.findByStatusAndShopidOrStatusAndShopname(1, s, 1, s, pagable);
+                if (findbycompany) {
+                    return isRepo.findCompany(companyid, s, pagable);
+                }
+                return isRepo.findCompany(s, pagable);
             }
         }
         if (role.equals("admin")) {
-            return isRepo.findByCompanyidAndStatusAndShopidContainingOrCompanyidAndStatusAndShopnameContaining(
-                    tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, pagable);
+            return isRepo.findCompanyWithContain(tokenData.getCompanyid(), s, pagable);
         } else {
-            return isRepo.findByStatusAndShopidContainingOrStatusAndShopnameContaining(1, s, 1, s, pagable);
+            if (findbycompany) {
+                return isRepo.findCompanyWithContain(companyid, s, pagable);
+            }
+            return isRepo.findCompanyWithContain(s, pagable);
         }
     }
 
@@ -111,6 +130,7 @@ public class ShopService {
 
     public boolean mapShopWithUserid(ShopMap shopMap, TokenData tokenData) {
         var now = LocalDateTime.now();
+        var role = tokenData.getRole();
         var data = getShopMapByUserid(shopMap.getUserref(), tokenData);
         if (data.isPresent()) {
             var old = data.get();
@@ -123,8 +143,10 @@ public class ShopService {
         shopMap.setModifieddate(now);
         shopMap.setUserid(tokenData.getUserid());
         shopMap.setUsername(tokenData.getUsername());
-        shopMap.setCompanyid(tokenData.getCompanyid());
-        shopMap.setCompanyname(tokenData.getCompanyname());
+        if (!role.equals("superadmin")) {
+            shopMap.setCompanyid(tokenData.getCompanyid());
+            shopMap.setCompanyname(tokenData.getCompanyname());
+        }
         ismRepo.save(shopMap);
         return true;
     }
