@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+repo_generator.js
+repo_total_generator.js

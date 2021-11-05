@@ -48,6 +48,22 @@ public class InvActivityController {
         this.authMiddleware = authMiddleware;
     }
 
+    @PostMapping(path = "batch")
+    public ResponseEntity<BaseResponse> addInventoryActivities(@RequestBody List<InventoryActivity> list,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            var auth = authMiddleware.checkToken(authorization);
+            if (!auth.isAuth()) {
+                return auth.getResponse();
+            }
+            var items = iaService.addInventoryActivities(list, auth.getTokenData());
+
+            return ResponseEntity.ok().body(BaseResponse.ok(items));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
+
     @PostMapping
     public ResponseEntity<BaseResponse> addInventoryActivity(@RequestBody InventoryActivity inventoryActivity,
             @RequestHeader("Authorization") String authorization) {

@@ -1,7 +1,6 @@
 package com.techhype.digitalinventory.InventoryActivity;
 
 import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,21 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class InvActivityService {
-    private IInvActivityRepository iaRepo;
+    private IInvActivityRepo iaRepo;
     private IInventoryRepository iRepo;
 
     @Autowired
-    public InvActivityService(IInvActivityRepository iaRepo, IInventoryRepository iRepo) {
+    public InvActivityService(IInvActivityRepo iaRepo, IInventoryRepository iRepo) {
         this.iaRepo = iaRepo;
         this.iRepo = iRepo;
+    }
+
+    public List<InventoryActivity> addInventoryActivities(List<InventoryActivity> list, TokenData tokenData) {
+        var newlist = new ArrayList<InventoryActivity>();
+        for (var item : list) {
+            newlist.add(addInventoryActivity(item, tokenData));
+        }
+        return newlist;
     }
 
     public InventoryActivity addInventoryActivity(InventoryActivity inventoryActivity, TokenData tokenData) {
@@ -94,6 +101,8 @@ public class InvActivityService {
         case "normaluser":
             inventory = iRepo.findByItemrefAndShopidAndCompanyidAndStatus(itemref, tokenData.getShopid(),
                     tokenData.getCompanyid(), 1).get();
+            // iaRepo.findInvActivityTotalsByCompanyidInvstatusSearch(companyid, invstatus,
+            // search)
             totals = iaRepo.getTotalsByItemref(tokenData.getUserid(), tokenData.getCompanyid(), itemref);
             break;
         case "admin":
@@ -130,98 +139,99 @@ public class InvActivityService {
         case "superadmin":
             return iaRepo.findByStatusAndActivityref(1, activityref);
         }
-        return iaRepo.findByUseridAndCompanyidAndStatusAndActivityref(tokenData.getUserid(), tokenData.getCompanyid(),
+        return iaRepo.findByShopidAndCompanyidAndStatusAndActivityref(tokenData.getShopid(), tokenData.getCompanyid(),
                 1, activityref);
     }
 
     public IAFilterTotalDto getInvActiviesTotal(String search, int page, int perpage, String sortby, String reverse,
             int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
         var role = tokenData.getRole();
+        var companyid = tokenData.getCompanyid();
+        var shopid = tokenData.getShopid();
+        var userid = tokenData.getUserid();
         if (search == null || search.isEmpty()) {
             if (voidstatus == 2) {
                 if (fromdate != null && todate != null) {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
-                            return iaRepo.getTotalsByDateBetweenAndInvstatus(tokenData.getCompanyid(), fromdate, todate,
-                                    invstatus).get(0);
+                            iaRepo.findInvActivityTotalsByCompanyidInvstatusDateBetween(companyid, invstatus, fromdate,
+                                    todate).get(0);
                         case "superadmin":
-                            return iaRepo.getTotalsByDateBetweenAndInvstatus(fromdate, todate, invstatus).get(0);
+                            return iaRepo.findInvActivityTotalsByInvstatusDateBetween(invstatus, fromdate, todate)
+                                    .get(0);
                         }
-                        return iaRepo.getTotalsByDateBetweenAndInvstatus(tokenData.getUserid(),
-                                tokenData.getCompanyid(), fromdate, todate, invstatus).get(0);
+                        return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusDateBetween(shopid, companyid,
+                                invstatus, fromdate, todate).get(0);
                     }
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByDateBetween(tokenData.getCompanyid(), fromdate, todate).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidDateBetween(companyid, fromdate, todate).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByDateBetween(fromdate, todate).get(0);
+                        return iaRepo.findInvActivityTotalsByDateBetween(fromdate, todate).get(0);
                     }
-                    return iaRepo
-                            .getTotalsByDateBetween(tokenData.getUserid(), tokenData.getCompanyid(), fromdate, todate)
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidDateBetween(shopid, companyid, fromdate, todate)
                             .get(0);
                 }
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByInvstatus(tokenData.getCompanyid(), invstatus).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidInvstatus(companyid, invstatus).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByInvstatus(invstatus).get(0);
+                        return iaRepo.findInvActivityTotalsByInvstatus(invstatus).get(0);
                     }
-                    return iaRepo.getTotalsByInvstatus(tokenData.getUserid(), tokenData.getCompanyid(), invstatus)
-                            .get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatus(shopid, companyid, invstatus).get(0);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotals(tokenData.getCompanyid()).get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyid(companyid).get(0);
                 case "superadmin":
                     return iaRepo.getTotals().get(0);
                 }
-                return iaRepo.getTotals(tokenData.getUserid(), tokenData.getCompanyid()).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyid(shopid, companyid).get(0);
             }
             if (fromdate != null && todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatus(tokenData.getCompanyid(),
-                                voidstatus, fromdate, todate, invstatus).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatusDateBetween(companyid,
+                                voidstatus, invstatus, fromdate, todate).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatus(voidstatus, fromdate, todate,
-                                invstatus).get(0);
+                        return iaRepo.findInvActivityTotalsByVoidstatusInvstatusDateBetween(voidstatus, invstatus,
+                                fromdate, todate).get(0);
                     }
-                    return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatus(tokenData.getUserid(),
-                            tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus).get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatusDateBetween(shopid,
+                            companyid, voidstatus, invstatus, fromdate, todate).get(0);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .getTotalsByVoidstatusAndDateBetween(tokenData.getCompanyid(), voidstatus, fromdate, todate)
-                            .get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyidVoidstatusDateBetween(companyid, voidstatus, fromdate,
+                            todate).get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByVoidstatusAndDateBetween(voidstatus, fromdate, todate).get(0);
+                    return iaRepo.findInvActivityTotalsByVoidstatusDateBetween(voidstatus, fromdate, todate).get(0);
                 }
-                return iaRepo.getTotalsByVoidstatusAndDateBetween(tokenData.getUserid(), tokenData.getCompanyid(),
-                        voidstatus, fromdate, todate).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusDateBetween(shopid, companyid, voidstatus,
+                        fromdate, todate).get(0);
             }
 
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsByVoidstatusAndInvstatus(tokenData.getCompanyid(), voidstatus, invstatus)
+                    return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatus(companyid, voidstatus, invstatus)
                             .get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByVoidstatusAndInvstatus(voidstatus, invstatus).get(0);
+                    return iaRepo.findInvActivityTotalsByVoidstatusInvstatus(voidstatus, invstatus).get(0);
                 }
-                return iaRepo.getTotalsByVoidstatusAndInvstatus(tokenData.getUserid(), tokenData.getCompanyid(),
-                        voidstatus, invstatus).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatus(shopid, companyid, voidstatus,
+                        invstatus).get(0);
             }
             switch (role) {
             case "admin":
-                return iaRepo.getTotalsByVoidstatus(tokenData.getCompanyid(), voidstatus).get(0);
+                return iaRepo.findInvActivityTotalsByCompanyidVoidstatus(companyid, voidstatus).get(0);
             case "superadmin":
-                return iaRepo.getTotalsByVoidstatus(voidstatus).get(0);
+                return iaRepo.findInvActivityTotalsByVoidstatus(voidstatus).get(0);
             }
-            return iaRepo.getTotalsByVoidstatus(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus).get(0);
+            return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatus(shopid, companyid, voidstatus).get(0);
         }
 
         String s = search.trim();
@@ -232,191 +242,185 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
-                            return iaRepo.getTotalsByDateBetweenAndInvstatusForSearch(tokenData.getCompanyid(),
-                                    fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                            return iaRepo.findInvActivityTotalsByCompanyidInvstatusDateBetweenSearch(companyid,
+                                    invstatus, fromdate, todate, s).get(0);
                         case "superadmin":
-                            return iaRepo.getTotalsByDateBetweenAndInvstatusForSearch(fromdate, todate, invstatus, s, s,
-                                    s, s, s).get(0);
+                            return iaRepo
+                                    .findInvActivityTotalsByInvstatusDateBetweenSearch(invstatus, fromdate, todate, s)
+                                    .get(0);
                         }
-                        return iaRepo.getTotalsByDateBetweenAndInvstatusForSearch(tokenData.getUserid(),
-                                tokenData.getCompanyid(), fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusDateBetweenSearch(shopid,
+                                companyid, invstatus, fromdate, todate, s).get(0);
                     }
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByDateBetweenForSearch(tokenData.getCompanyid(), fromdate, todate, s, s,
-                                s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidDateBetweenSearch(companyid, fromdate, todate, s)
+                                .get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByDateBetweenForSearch(fromdate, todate, s, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByDateBetweenSearch(fromdate, todate, s).get(0);
                     }
-                    return iaRepo.getTotalsByDateBetweenForSearch(tokenData.getUserid(), tokenData.getCompanyid(),
-                            fromdate, todate, s, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidDateBetweenSearch(shopid, companyid, fromdate,
+                            todate, s).get(0);
                 }
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByInvstatusForSearch(tokenData.getCompanyid(), invstatus, s, s, s, s, s)
-                                .get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidInvstatusSearch(companyid, invstatus, s).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByInvstatusForSearch(invstatus, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByInvstatusSearch(invstatus, s).get(0);
                     }
-                    return iaRepo.getTotalsByInvstatusForSearch(tokenData.getUserid(), tokenData.getCompanyid(),
-                            invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusSearch(shopid, companyid, invstatus, s)
+                            .get(0);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsForSearch(tokenData.getCompanyid(), s, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyidSearch(companyid, s).get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsForSearch(s, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsBySearch(s).get(0);
                 }
-                return iaRepo.getTotalsForSearch(tokenData.getUserid(), tokenData.getCompanyid(), s, s, s, s, s, s)
-                        .get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidSearch(shopid, companyid, s).get(0);
             }
             if (fromdate != null && todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearch(tokenData.getCompanyid(),
-                                voidstatus, fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatusDateBetweenSearch(companyid,
+                                voidstatus, invstatus, fromdate, todate, s).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearch(voidstatus, fromdate,
-                                todate, invstatus, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByVoidstatusInvstatusDateBetweenSearch(voidstatus, invstatus,
+                                fromdate, todate, s).get(0);
                     }
-                    return iaRepo
-                            .getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearch(tokenData.getUserid(),
-                                    tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus, s, s, s, s, s)
-                            .get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatusDateBetweenSearch(shopid,
+                            companyid, voidstatus, invstatus, fromdate, todate, s).get(0);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearch(tokenData.getCompanyid(), voidstatus,
-                            fromdate, todate, s, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyidVoidstatusDateBetweenSearch(companyid, voidstatus,
+                            fromdate, todate, s).get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearch(voidstatus, fromdate, todate, s, s, s, s,
-                            s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByVoidstatusDateBetweenSearch(voidstatus, fromdate, todate, s)
+                            .get(0);
                 }
-                return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearch(tokenData.getUserid(),
-                        tokenData.getCompanyid(), voidstatus, fromdate, todate, s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusDateBetweenSearch(shopid, companyid,
+                        voidstatus, fromdate, todate, s).get(0);
             }
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsByVoidstatusAndInvstatusForSearch(tokenData.getCompanyid(), voidstatus,
-                            invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatusSearch(companyid, voidstatus,
+                            invstatus, s).get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByVoidstatusAndInvstatusForSearch(voidstatus, invstatus, s, s, s, s, s)
-                            .get(0);
+                    return iaRepo.findInvActivityTotalsByVoidstatusInvstatusSearch(voidstatus, invstatus, s).get(0);
                 }
-                return iaRepo.getTotalsByVoidstatusAndInvstatusForSearch(tokenData.getUserid(),
-                        tokenData.getCompanyid(), voidstatus, invstatus, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatusSearch(shopid, companyid,
+                        voidstatus, invstatus, s).get(0);
             }
             switch (role) {
             case "admin":
-                return iaRepo.getTotalsByVoidstatusForSearch(tokenData.getCompanyid(), voidstatus, s, s, s, s, s, s)
-                        .get(0);
+                return iaRepo.findInvActivityTotalsByCompanyidVoidstatusSearch(companyid, voidstatus, s).get(0);
             case "superadmin":
-                return iaRepo.getTotalsByVoidstatusForSearch(voidstatus, s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByVoidstatusSearch(voidstatus, s).get(0);
             }
-            return iaRepo.getTotalsByVoidstatusForSearch(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus, s,
-                    s, s, s, s, s).get(0);
+            return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusSearch(shopid, companyid, voidstatus, s)
+                    .get(0);
         }
         if (voidstatus == 2) {
             if (fromdate != null & todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.getTotalsByDateBetweenAndInvstatusForContainSearch(tokenData.getCompanyid(),
-                                fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByCompanyidInvstatusDateBetweenSearchContain(companyid,
+                                invstatus, fromdate, todate, s).get(0);
                     case "superadmin":
-                        return iaRepo.getTotalsByDateBetweenAndInvstatusForContainSearch(fromdate, todate, invstatus, s,
-                                s, s, s, s).get(0);
+                        return iaRepo.findInvActivityTotalsByInvstatusDateBetweenSearchContain(invstatus, fromdate,
+                                todate, s).get(0);
                     }
-                    return iaRepo.getTotalsByDateBetweenAndInvstatusForContainSearch(tokenData.getUserid(),
-                            tokenData.getCompanyid(), fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusDateBetweenSearchContain(shopid,
+                            companyid, invstatus, fromdate, todate, s).get(0);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsByDateBetweenForSearchContain(tokenData.getCompanyid(), fromdate, todate, s,
-                            s, s, s, s, s).get(0);
+                    return iaRepo
+                            .findInvActivityTotalsByCompanyidDateBetweenSearchContain(companyid, fromdate, todate, s)
+                            .get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByDateBetweenForSearchContain(fromdate, todate, s, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByDateBetweenSearchContain(fromdate, todate, s).get(0);
                 }
-                return iaRepo.getTotalsByDateBetweenForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(),
-                        fromdate, todate, s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidDateBetweenSearchContain(shopid, companyid,
+                        fromdate, todate, s).get(0);
             }
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .getTotalsByInvstatusForSearchContain(tokenData.getCompanyid(), invstatus, s, s, s, s, s)
+                    return iaRepo.findInvActivityTotalsByCompanyidInvstatusSearchContain(companyid, invstatus, s)
                             .get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByInvstatusForSearchContain(invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByInvstatusSearchContain(invstatus, s).get(0);
                 }
-                return iaRepo.getTotalsByInvstatusForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(),
-                        invstatus, s, s, s, s, s).get(0);
+                return iaRepo
+                        .findInvActivityTotalsByShopidCompanyidInvstatusSearchContain(shopid, companyid, invstatus, s)
+                        .get(0);
             }
             switch (role) {
             case "admin":
-                return iaRepo.getTotalsForSearchContain(tokenData.getCompanyid(), s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByCompanyidSearchContain(companyid, s).get(0);
             case "superadmin":
-                return iaRepo.getTotalsForSearchContain(s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsBySearchContain(s).get(0);
             }
-            return iaRepo.getTotalsForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(), s, s, s, s, s, s)
-                    .get(0);
+            return iaRepo.findInvActivityTotalsByShopidCompanyidSearchContain(shopid, companyid, s).get(0);
         }
         if (fromdate != null && todate != null) {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearchContain(
-                            tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatusDateBetweenSearchContain(companyid,
+                            voidstatus, invstatus, fromdate, todate, s).get(0);
                 case "superadmin":
-                    return iaRepo.getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearchContain(voidstatus, fromdate,
-                            todate, invstatus, s, s, s, s, s).get(0);
+                    return iaRepo.findInvActivityTotalsByVoidstatusInvstatusDateBetweenSearchContain(voidstatus,
+                            invstatus, fromdate, todate, s).get(0);
                 }
-                return iaRepo
-                        .getTotalsByVoidstatusAndDateBetweenAndInvstatusForSearchContain(tokenData.getUserid(),
-                                tokenData.getCompanyid(), voidstatus, fromdate, todate, invstatus, s, s, s, s, s)
-                        .get(0);
+                return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(shopid,
+                        companyid, voidstatus, invstatus, fromdate, todate, s).get(0);
             }
             switch (role) {
             case "admin":
-                return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearchContain(tokenData.getCompanyid(), voidstatus,
-                        fromdate, todate, s, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByCompanyidVoidstatusDateBetweenSearchContain(companyid, voidstatus,
+                        fromdate, todate, s).get(0);
             case "superadmin":
-                return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearchContain(voidstatus, fromdate, todate, s, s, s,
-                        s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByVoidstatusDateBetweenSearchContain(voidstatus, fromdate, todate, s)
+                        .get(0);
             }
-            return iaRepo.getTotalsByVoidstatusAndDateBetweenForSearchContain(tokenData.getUserid(),
-                    tokenData.getCompanyid(), voidstatus, fromdate, todate, s, s, s, s, s, s).get(0);
+            return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusDateBetweenSearchContain(shopid, companyid,
+                    voidstatus, fromdate, todate, s).get(0);
         }
         if (!invstatus.equals("all")) {
             switch (role) {
             case "admin":
-                return iaRepo.getTotalsByVoidstatusAndInvstatusForSearchContain(tokenData.getCompanyid(), voidstatus,
-                        invstatus, s, s, s, s, s).get(0);
+                return iaRepo.findInvActivityTotalsByCompanyidVoidstatusInvstatusSearchContain(companyid, voidstatus,
+                        invstatus, s).get(0);
             case "superadmin":
-                return iaRepo.getTotalsByVoidstatusAndInvstatusForSearchContain(voidstatus, invstatus, s, s, s, s, s)
-                        .get(0);
+                return iaRepo.findInvActivityTotalsByVoidstatusInvstatusSearchContain(voidstatus, invstatus, s).get(0);
             }
-            return iaRepo.getTotalsByVoidstatusAndInvstatusForSearchContain(tokenData.getUserid(),
-                    tokenData.getCompanyid(), voidstatus, invstatus, s, s, s, s, s).get(0);
+            return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusInvstatusSearchContain(shopid, companyid,
+                    voidstatus, invstatus, s).get(0);
         }
         switch (role) {
         case "admin":
-            return iaRepo.getTotalsByVoidstatusForSearchContain(tokenData.getCompanyid(), voidstatus, s, s, s, s, s, s)
-                    .get(0);
+            return iaRepo.findInvActivityTotalsByCompanyidVoidstatusSearchContain(companyid, voidstatus, s).get(0);
         case "superadmin":
-            return iaRepo.getTotalsByVoidstatusForSearchContain(voidstatus, s, s, s, s, s, s).get(0);
+            return iaRepo.findInvActivityTotalsByVoidstatusSearchContain(voidstatus, s).get(0);
         }
-        return iaRepo.getTotalsByVoidstatusForSearchContain(tokenData.getUserid(), tokenData.getCompanyid(), voidstatus,
-                s, s, s, s, s, s).get(0);
+        return iaRepo.findInvActivityTotalsByShopidCompanyidVoidstatusSearchContain(shopid, companyid, voidstatus, s)
+                .get(0);
     }
 
     public Page<InventoryActivity> getInvActivities(String search, int page, int perpage, String sortby, String reverse,
             int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
-        String role = tokenData.getRole();
-        var pagable = PageRequest.of(page - 1, perpage,
+        var role = tokenData.getRole();
+        var shopid = tokenData.getShopid();
+        var companyid = tokenData.getCompanyid();
+        var userid = tokenData.getUserid();
+        var pageable = PageRequest.of(page - 1, perpage,
                 Sort.by(reverse.equals("1") ? Sort.Direction.DESC : Sort.Direction.ASC, sortby));
         if (search == null || search.isEmpty()) {
             if (voidstatus == 2) {
@@ -424,89 +428,83 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
-                            return iaRepo.findByCompanyidAndStatusAndDateBetweenAndInvstatus(tokenData.getCompanyid(),
-                                    1, fromdate, todate, invstatus, pagable);
+                            return iaRepo.findInvActivityByCompanyidInvstatusDateBetween(companyid, invstatus, fromdate,
+                                    todate, pageable);
                         case "superadmin":
-                            return iaRepo.findByStatusAndDateBetweenAndInvstatus(1, fromdate, todate, invstatus,
-                                    pagable);
+                            return iaRepo.findInvActivityByInvstatusDateBetween(invstatus, fromdate, todate, pageable);
                         }
-                        return iaRepo.findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, fromdate, todate, invstatus, pagable);
+                        return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetween(shopid, companyid, invstatus,
+                                fromdate, todate, pageable);
                     }
                     switch (role) {
                     case "admin":
-                        return iaRepo.findByCompanyidAndStatusAndDateBetween(tokenData.getCompanyid(), 1, fromdate,
-                                todate, pagable);
+                        return iaRepo.findInvActivityByCompanyidDateBetween(companyid, fromdate, todate, pageable);
                     case "superadmin":
-                        return iaRepo.findByStatusAndDateBetween(1, fromdate, todate, pagable);
+                        return iaRepo.findInvActivityByDateBetween(fromdate, todate, pageable);
                     }
-                    return iaRepo.findByUseridAndCompanyidAndStatusAndDateBetween(tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, fromdate, todate, pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidDateBetween(shopid, companyid, fromdate, todate,
+                            pageable);
                 }
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.findByCompanyidAndStatusAndInvstatus(tokenData.getCompanyid(), 1, invstatus,
-                                pagable);
+                        return iaRepo.findInvActivityByCompanyidInvstatus(companyid, invstatus, pageable);
                     case "superadmin":
-                        return iaRepo.findByStatusAndInvstatus(1, invstatus, pagable);
+                        return iaRepo.findInvActivityByInvstatus(invstatus, pageable);
                     }
-                    return iaRepo.findByUseridAndCompanyidAndStatusAndInvstatus(tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, invstatus, pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidInvstatus(shopid, companyid, invstatus, pageable);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.findByCompanyidAndStatus(tokenData.getCompanyid(), 1, pagable);
+                    return iaRepo.findInvActivityByCompanyid(companyid, pageable);
                 case "superadmin":
-                    return iaRepo.findByStatus(1, pagable);
+                    return iaRepo.findByStatus(1, pageable);
                 }
-                return iaRepo.findByUseridAndCompanyidAndStatus(tokenData.getUserid(), tokenData.getCompanyid(), 1,
-                        pagable);
+                return iaRepo.findInvActivityByShopidCompanyid(shopid, companyid, pageable);
             }
             if (fromdate != null && todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo.findByCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
-                                tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, pagable);
+                        return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetween(companyid, voidstatus,
+                                invstatus, fromdate, todate, pageable);
+
                     case "superadmin":
-                        return iaRepo.findByStatusAndVoidstatusAndDateBetweenAndInvstatus(1, voidstatus, fromdate,
-                                todate, invstatus, pagable);
+                        return iaRepo.findInvActivityByVoidstatusInvstatusDateBetween(voidstatus, invstatus, fromdate,
+                                todate, pageable);
                     }
-                    return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus,
-                            pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetween(shopid, companyid,
+                            voidstatus, invstatus, fromdate, todate, pageable);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo.findByCompanyidAndStatusAndVoidstatusAndDateBetween(tokenData.getCompanyid(), 1,
-                            voidstatus, fromdate, todate, pagable);
+                    return iaRepo.findInvActivityByCompanyidVoidstatusDateBetween(companyid, voidstatus, fromdate,
+                            todate, pageable);
                 case "superadmin":
-                    return iaRepo.findByStatusAndVoidstatusAndDateBetween(1, voidstatus, fromdate, todate, pagable);
+                    return iaRepo.findInvActivityByVoidstatusDateBetween(voidstatus, fromdate, todate, pageable);
                 }
-                return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetween(tokenData.getUserid(),
-                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetween(shopid, companyid, voidstatus,
+                        fromdate, todate, pageable);
             }
 
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo.findByCompanyidAndStatusAndVoidstatusAndInvstatus(tokenData.getCompanyid(), 1,
-                            voidstatus, invstatus, pagable);
+                    return iaRepo.findInvActivityByCompanyidVoidstatusInvstatus(companyid, voidstatus, invstatus,
+                            pageable);
                 case "superadmin":
-                    return iaRepo.findByStatusAndVoidstatusAndInvstatus(1, voidstatus, invstatus, pagable);
+                    return iaRepo.findInvActivityByVoidstatusInvstatus(voidstatus, invstatus, pageable);
                 }
-                return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatus(tokenData.getUserid(),
-                        tokenData.getCompanyid(), 1, voidstatus, invstatus, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatus(shopid, companyid, voidstatus,
+                        invstatus, pageable);
             }
             switch (role) {
             case "admin":
-                return iaRepo.findByCompanyidAndStatusAndVoidstatus(tokenData.getCompanyid(), 1, voidstatus, pagable);
+                return iaRepo.findInvActivityByCompanyidVoidstatus(companyid, voidstatus, pageable);
             case "superadmin":
-                return iaRepo.findByStatusAndVoidstatus(1, voidstatus, pagable);
+                return iaRepo.findInvActivityByVoidstatus(voidstatus, pageable);
             }
-            return iaRepo.findByUseridAndCompanyidAndStatusAndVoidstatus(tokenData.getUserid(),
-                    tokenData.getCompanyid(), 1, voidstatus, pagable);
+            return iaRepo.findInvActivityByShopidCompanyidVoidstatus(shopid, companyid, voidstatus, pageable);
         }
 
         String s = search.trim();
@@ -517,388 +515,171 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
-                            return iaRepo
-                                    .findByCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefOrCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelOrCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeOrCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeOrCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomername(
-                                            tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                            tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                            tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                            tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                            tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s, pagable);
+                            return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearch(companyid, invstatus,
+                                    fromdate, todate, s, pageable);
                         case "superadmin":
-                            return iaRepo
-                                    .findByStatusAndDateBetweenAndInvstatusAndActivityrefOrStatusAndDateBetweenAndInvstatusAndLabelOrStatusAndDateBetweenAndInvstatusAndItemcodeOrStatusAndDateBetweenAndInvstatusAndVouchercodeOrStatusAndDateBetweenAndInvstatusAndCustomername(
-                                            1, fromdate, todate, invstatus, s, 1, fromdate, todate, invstatus, s, 1,
-                                            fromdate, todate, invstatus, s, 1, fromdate, todate, invstatus, s, 1,
-                                            fromdate, todate, invstatus, s, pagable);
+                            return iaRepo.findInvActivityByInvstatusDateBetweenSearch(invstatus, fromdate, todate, s,
+                                    pageable);
                         }
-                        return iaRepo
-                                .findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomername(
-                                        tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus,
-                                        s, tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate,
-                                        invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate,
-                                        todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
-                                        fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(),
-                                        1, fromdate, todate, invstatus, s, pagable);
+                        return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearch(shopid, companyid,
+                                invstatus, fromdate, todate, s, pageable);
                     }
                     switch (role) {
                     case "admin":
-                        return iaRepo
-                                .findByCompanyidAndStatusAndDateBetweenAndActivityrefOrCompanyidAndStatusAndDateBetweenAndLabelOrCompanyidAndStatusAndDateBetweenAndItemcodeOrCompanyidAndStatusAndDateBetweenAndVouchercodeOrCompanyidAndStatusAndDateBetweenAndCustomernameOrCompanyidAndStatusAndDateBetweenAndInvstatus(
-                                        tokenData.getCompanyid(), 1, fromdate, todate, s, tokenData.getCompanyid(), 1,
-                                        fromdate, todate, s, tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                        tokenData.getCompanyid(), 1, fromdate, todate, s, tokenData.getCompanyid(), 1,
-                                        fromdate, todate, s, tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                        return iaRepo.findInvActivityByCompanyidDateBetweenSearch(companyid, fromdate, todate, s,
+                                pageable);
                     case "superadmin":
-                        return iaRepo
-                                .findByStatusAndDateBetweenAndActivityrefOrStatusAndDateBetweenAndLabelOrStatusAndDateBetweenAndItemcodeOrStatusAndDateBetweenAndVouchercodeOrStatusAndDateBetweenAndCustomernameOrStatusAndDateBetweenAndInvstatus(
-                                        1, fromdate, todate, s, 1, fromdate, todate, s, 1, fromdate, todate, s, 1,
-                                        fromdate, todate, s, 1, fromdate, todate, s, 1, fromdate, todate, s, pagable);
+                        return iaRepo.findInvActivityByDateBetweenSearch(fromdate, todate, s, pageable);
                     }
-                    return iaRepo
-                            .findByUseridAndCompanyidAndStatusAndDateBetweenAndActivityrefOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatus(
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearch(shopid, companyid, fromdate, todate,
+                            s, pageable);
                 }
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo
-                                .findByCompanyidAndStatusAndInvstatusAndActivityrefOrCompanyidAndStatusAndInvstatusAndLabelOrCompanyidAndStatusAndInvstatusAndItemcodeOrCompanyidAndStatusAndInvstatusAndVouchercodeOrCompanyidAndStatusAndInvstatusAndCustomername(
-                                        tokenData.getCompanyid(), 1, invstatus, s, tokenData.getCompanyid(), 1,
-                                        invstatus, s, tokenData.getCompanyid(), 1, invstatus, s,
-                                        tokenData.getCompanyid(), 1, invstatus, s, tokenData.getCompanyid(), 1,
-                                        invstatus, s, pagable);
+                        return iaRepo.findInvActivityByCompanyidInvstatusSearch(companyid, invstatus, s, pageable);
                     case "superadmin":
-                        return iaRepo
-                                .findByStatusAndInvstatusAndActivityrefOrStatusAndInvstatusAndLabelOrStatusAndInvstatusAndItemcodeOrStatusAndInvstatusAndVouchercodeOrStatusAndInvstatusAndCustomername(
-                                        1, invstatus, s, 1, invstatus, s, 1, invstatus, s, 1, invstatus, s, 1,
-                                        invstatus, s, pagable);
+                        return iaRepo.findInvActivityByInvstatusSearch(invstatus, s, pageable);
                     }
-                    return iaRepo
-                            .findByUseridAndCompanyidAndStatusAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndInvstatusAndCustomername(
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s, pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidInvstatusSearch(shopid, companyid, invstatus, s,
+                            pageable);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndActivityrefOrCompanyidAndStatusAndLabelOrCompanyidAndStatusAndItemcodeOrCompanyidAndStatusAndVouchercodeOrCompanyidAndStatusAndCustomernameOrCompanyidAndStatusAndInvstatus(
-                                    tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
-                                    tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
-                                    tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidSearch(companyid, s, pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndActivityrefOrStatusAndLabelOrStatusAndItemcodeOrStatusAndVouchercodeOrStatusAndCustomernameOrStatusAndInvstatus(
-                                    1, s, 1, s, 1, s, 1, s, 1, s, 1, s, pagable);
+                    return iaRepo.findInvActivityBySearch(s, pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndActivityrefOrUseridAndCompanyidAndStatusAndLabelOrUseridAndCompanyidAndStatusAndItemcodeOrUseridAndCompanyidAndStatusAndVouchercodeOrUseridAndCompanyidAndStatusAndCustomernameOrUseridAndCompanyidAndStatusAndInvstatus(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                                pagable);
+                return iaRepo.findInvActivityByShopidCompanyidSearch(shopid, companyid, s, pageable);
             }
             if (fromdate != null && todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo
-                                .findByCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomername(
-                                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                        pagable);
+                        return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearch(companyid,
+                                voidstatus, invstatus, fromdate, todate, s, pageable);
                     case "superadmin":
-                        return iaRepo
-                                .findByStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomername(
-                                        1, voidstatus, fromdate, todate, invstatus, s, 1, voidstatus, fromdate, todate,
-                                        invstatus, s, 1, voidstatus, fromdate, todate, invstatus, s, 1, voidstatus,
-                                        fromdate, todate, invstatus, s, 1, voidstatus, fromdate, todate, invstatus, s,
-                                        pagable);
+                        return iaRepo.findInvActivityByVoidstatusInvstatusDateBetweenSearch(voidstatus, invstatus,
+                                fromdate, todate, s, pageable);
                     }
-                    return iaRepo
-                            .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomername(
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
-                                    invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus,
-                                    fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
-                                    voidstatus, fromdate, todate, invstatus, s, tokenData.getUserid(),
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
-                                    invstatus, s, pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearch(shopid,
+                            companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearch(companyid, voidstatus, fromdate,
+                            todate, s, pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndVoidstatusAndDateBetweenAndActivityrefOrStatusAndVoidstatusAndDateBetweenAndLabelOrStatusAndVoidstatusAndDateBetweenAndItemcodeOrStatusAndVoidstatusAndDateBetweenAndVouchercodeOrStatusAndVoidstatusAndDateBetweenAndCustomernameOrStatusAndVoidstatusAndDateBetweenAndInvstatus(
-                                    1, voidstatus, fromdate, todate, s, 1, voidstatus, fromdate, todate, s, 1,
-                                    voidstatus, fromdate, todate, s, 1, voidstatus, fromdate, todate, s, 1, voidstatus,
-                                    fromdate, todate, s, 1, voidstatus, fromdate, todate, s, pagable);
+                    return iaRepo.findInvActivityByVoidstatusDateBetweenSearch(voidstatus, fromdate, todate, s,
+                            pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatus(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                pagable);
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearch(shopid, companyid, voidstatus,
+                        fromdate, todate, s, pageable);
             }
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefOrCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelOrCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeOrCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeOrCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomername(
-                                    tokenData.getCompanyid(), 1, voidstatus, invstatus, s, tokenData.getCompanyid(), 1,
-                                    voidstatus, invstatus, s, tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, invstatus, s, tokenData.getCompanyid(), 1,
-                                    voidstatus, invstatus, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearch(companyid, voidstatus, invstatus,
+                            s, pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndVoidstatusAndInvstatusAndActivityrefOrStatusAndVoidstatusAndInvstatusAndLabelOrStatusAndVoidstatusAndInvstatusAndItemcodeOrStatusAndVoidstatusAndInvstatusAndVouchercodeOrStatusAndVoidstatusAndInvstatusAndCustomername(
-                                    1, voidstatus, invstatus, s, 1, voidstatus, invstatus, s, 1, voidstatus, invstatus,
-                                    s, 1, voidstatus, invstatus, s, 1, voidstatus, invstatus, s, pagable);
+                    return iaRepo.findInvActivityByVoidstatusInvstatusSearch(voidstatus, invstatus, s, pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomername(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearch(shopid, companyid, voidstatus,
+                        invstatus, s, pageable);
             }
             switch (role) {
             case "admin":
-                return iaRepo
-                        .findByCompanyidAndStatusAndVoidstatusAndActivityrefOrCompanyidAndStatusAndVoidstatusAndLabelOrCompanyidAndStatusAndVoidstatusAndItemcodeOrCompanyidAndStatusAndVoidstatusAndVouchercodeOrCompanyidAndStatusAndVoidstatusAndCustomernameOrCompanyidAndStatusAndVoidstatusAndInvstatus(
-                                tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                                tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                                tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                                pagable);
+                return iaRepo.findInvActivityByCompanyidVoidstatusSearch(companyid, voidstatus, s, pageable);
             case "superadmin":
-                return iaRepo
-                        .findByStatusAndVoidstatusAndActivityrefOrStatusAndVoidstatusAndLabelOrStatusAndVoidstatusAndItemcodeOrStatusAndVoidstatusAndVouchercodeOrStatusAndVoidstatusAndCustomernameOrStatusAndVoidstatusAndInvstatus(
-                                1, voidstatus, s, 1, voidstatus, s, 1, voidstatus, s, 1, voidstatus, s, 1, voidstatus,
-                                s, 1, voidstatus, s, pagable);
+                return iaRepo.findInvActivityByVoidstatusSearch(voidstatus, s, pageable);
             }
-            return iaRepo
-                    .findByUseridAndCompanyidAndStatusAndVoidstatusAndActivityrefOrUseridAndCompanyidAndStatusAndVoidstatusAndLabelOrUseridAndCompanyidAndStatusAndVoidstatusAndItemcodeOrUseridAndCompanyidAndStatusAndVoidstatusAndVouchercodeOrUseridAndCompanyidAndStatusAndVoidstatusAndCustomernameOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatus(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(), tokenData.getCompanyid(),
-                            1, voidstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, voidstatus, s, pagable);
+            return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearch(shopid, companyid, voidstatus, s, pageable);
         }
         if (voidstatus == 2) {
             if (fromdate != null & todate != null) {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
-                        return iaRepo
-                                .findByCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefContainingOrCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelContainingOrCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeContainingOrCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                        tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                        tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s, pagable);
+                        return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearchContain(companyid, invstatus,
+                                fromdate, todate, s, pageable);
                     case "superadmin":
-                        return iaRepo
-                                .findByStatusAndDateBetweenAndInvstatusAndActivityrefContainingOrStatusAndDateBetweenAndInvstatusAndLabelContainingOrStatusAndDateBetweenAndInvstatusAndItemcodeContainingOrStatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrStatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                        1, fromdate, todate, invstatus, s, 1, fromdate, todate, invstatus, s, 1,
-                                        fromdate, todate, invstatus, s, 1, fromdate, todate, invstatus, s, 1, fromdate,
-                                        todate, invstatus, s, pagable);
+                        return iaRepo.findInvActivityByInvstatusDateBetweenSearchContain(invstatus, fromdate, todate, s,
+                                pageable);
                     }
-                    return iaRepo
-                            .findByUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                    tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, invstatus, s,
-                                    pagable);
+                    return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearchContain(shopid, companyid,
+                            invstatus, fromdate, todate, s, pageable);
                 }
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndDateBetweenAndActivityrefContainingOrCompanyidAndStatusAndDateBetweenAndLabelContainingOrCompanyidAndStatusAndDateBetweenAndItemcodeContainingOrCompanyidAndStatusAndDateBetweenAndVouchercodeContainingOrCompanyidAndStatusAndDateBetweenAndCustomernameContainingOrCompanyidAndStatusAndDateBetweenAndInvstatusContaining(
-                                    tokenData.getCompanyid(), 1, fromdate, todate, s, tokenData.getCompanyid(), 1,
-                                    fromdate, todate, s, tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                    tokenData.getCompanyid(), 1, fromdate, todate, s, tokenData.getCompanyid(), 1,
-                                    fromdate, todate, s, tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidDateBetweenSearchContain(companyid, fromdate, todate, s,
+                            pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndDateBetweenAndActivityrefContainingOrStatusAndDateBetweenAndLabelContainingOrStatusAndDateBetweenAndItemcodeContainingOrStatusAndDateBetweenAndVouchercodeContainingOrStatusAndDateBetweenAndCustomernameContainingOrStatusAndDateBetweenAndInvstatusContaining(
-                                    1, fromdate, todate, s, 1, fromdate, todate, s, 1, fromdate, todate, s, 1, fromdate,
-                                    todate, s, 1, fromdate, todate, s, 1, fromdate, todate, s, pagable);
+                    return iaRepo.findInvActivityByDateBetweenSearchContain(fromdate, todate, s, pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndDateBetweenAndInvstatusContaining(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s,
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, fromdate, todate, s, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearchContain(shopid, companyid, fromdate,
+                        todate, s, pageable);
             }
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndInvstatusAndActivityrefContainingOrCompanyidAndStatusAndInvstatusAndLabelContainingOrCompanyidAndStatusAndInvstatusAndItemcodeContainingOrCompanyidAndStatusAndInvstatusAndVouchercodeContainingOrCompanyidAndStatusAndInvstatusAndCustomernameContaining(
-                                    tokenData.getCompanyid(), 1, invstatus, s, tokenData.getCompanyid(), 1, invstatus,
-                                    s, tokenData.getCompanyid(), 1, invstatus, s, tokenData.getCompanyid(), 1,
-                                    invstatus, s, tokenData.getCompanyid(), 1, invstatus, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidInvstatusSearchContain(companyid, invstatus, s, pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndInvstatusAndActivityrefContainingOrStatusAndInvstatusAndLabelContainingOrStatusAndInvstatusAndItemcodeContainingOrStatusAndInvstatusAndVouchercodeContainingOrStatusAndInvstatusAndCustomernameContaining(
-                                    1, invstatus, s, 1, invstatus, s, 1, invstatus, s, 1, invstatus, s, 1, invstatus, s,
-                                    pagable);
+                    return iaRepo.findInvActivityByInvstatusSearchContain(invstatus, s, pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndInvstatusAndCustomernameContaining(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, invstatus, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, invstatus, s, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidInvstatusSearchContain(shopid, companyid, invstatus, s,
+                        pageable);
             }
             switch (role) {
             case "admin":
-                return iaRepo
-                        .findByCompanyidAndStatusAndActivityrefContainingOrCompanyidAndStatusAndLabelContainingOrCompanyidAndStatusAndItemcodeContainingOrCompanyidAndStatusAndVouchercodeContainingOrCompanyidAndStatusAndCustomernameContainingOrCompanyidAndStatusAndInvstatusContaining(
-                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
-                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s,
-                                tokenData.getCompanyid(), 1, s, tokenData.getCompanyid(), 1, s, pagable);
+                return iaRepo.findInvActivityByCompanyidSearchContain(companyid, s, pageable);
             case "superadmin":
-                return iaRepo
-                        .findByStatusAndActivityrefContainingOrStatusAndLabelContainingOrStatusAndItemcodeContainingOrStatusAndVouchercodeContainingOrStatusAndCustomernameContainingOrStatusAndInvstatusContaining(
-                                1, s, 1, s, 1, s, 1, s, 1, s, 1, s, pagable);
+                return iaRepo.findInvActivityBySearchContain(s, pageable);
             }
-            return iaRepo
-                    .findByUseridAndCompanyidAndStatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndLabelContainingOrUseridAndCompanyidAndStatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndCustomernameContainingOrUseridAndCompanyidAndStatusAndInvstatusContaining(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, s, tokenData.getUserid(),
-                            tokenData.getCompanyid(), 1, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, s,
-                            pagable);
+            return iaRepo.findInvActivityByShopidCompanyidSearchContain(shopid, companyid, s, pageable);
         }
         if (fromdate != null && todate != null) {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
-                    return iaRepo
-                            .findByCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s,
-                                    tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s, pagable);
+                    return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearchContain(companyid,
+                            voidstatus, invstatus, fromdate, todate, s, pageable);
                 case "superadmin":
-                    return iaRepo
-                            .findByStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefContainingOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelContainingOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeContainingOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                    1, voidstatus, fromdate, todate, invstatus, s, 1, voidstatus, fromdate, todate,
-                                    invstatus, s, 1, voidstatus, fromdate, todate, invstatus, s, 1, voidstatus,
-                                    fromdate, todate, invstatus, s, 1, voidstatus, fromdate, todate, invstatus, s,
-                                    pagable);
+                    return iaRepo.findInvActivityByVoidstatusInvstatusDateBetweenSearchContain(voidstatus, invstatus,
+                            fromdate, todate, s, pageable);
                 }
-                return iaRepo
-                        .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusAndCustomernameContaining(
-                                tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate,
-                                invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate,
-                                todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus,
-                                fromdate, todate, invstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
-                                voidstatus, fromdate, todate, invstatus, s, tokenData.getUserid(),
-                                tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, invstatus, s, pagable);
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(shopid,
+                        companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
             }
             switch (role) {
             case "admin":
-                return iaRepo
-                        .findByCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameContainingOrCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusContaining(
-                                tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s, tokenData.getCompanyid(),
-                                1, voidstatus, fromdate, todate, s, tokenData.getCompanyid(), 1, voidstatus, fromdate,
-                                todate, s, tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                                tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s, tokenData.getCompanyid(),
-                                1, voidstatus, fromdate, todate, s, pagable);
+                return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearchContain(companyid, voidstatus,
+                        fromdate, todate, s, pageable);
             case "superadmin":
-                return iaRepo
-                        .findByStatusAndVoidstatusAndDateBetweenAndActivityrefContainingOrStatusAndVoidstatusAndDateBetweenAndLabelContainingOrStatusAndVoidstatusAndDateBetweenAndItemcodeContainingOrStatusAndVoidstatusAndDateBetweenAndVouchercodeContainingOrStatusAndVoidstatusAndDateBetweenAndCustomernameContainingOrStatusAndVoidstatusAndDateBetweenAndInvstatusContaining(
-                                1, voidstatus, fromdate, todate, s, 1, voidstatus, fromdate, todate, s, 1, voidstatus,
-                                fromdate, todate, s, 1, voidstatus, fromdate, todate, s, 1, voidstatus, fromdate,
-                                todate, s, 1, voidstatus, fromdate, todate, s, pagable);
+                return iaRepo.findInvActivityByVoidstatusDateBetweenSearchContain(voidstatus, fromdate, todate, s,
+                        pageable);
             }
-            return iaRepo
-                    .findByUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndCustomernameContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndDateBetweenAndInvstatusContaining(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, fromdate, todate, s,
-                            pagable);
+            return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearchContain(shopid, companyid,
+                    voidstatus, fromdate, todate, s, pageable);
         }
         if (!invstatus.equals("all")) {
             switch (role) {
             case "admin":
-                return iaRepo
-                        .findByCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefContainingOrCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelContainingOrCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeContainingOrCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeContainingOrCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomernameContaining(
-                                tokenData.getCompanyid(), 1, voidstatus, invstatus, s, tokenData.getCompanyid(), 1,
-                                voidstatus, invstatus, s, tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                                tokenData.getCompanyid(), 1, voidstatus, invstatus, s, tokenData.getCompanyid(), 1,
-                                voidstatus, invstatus, s, pagable);
+                return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearchContain(companyid, voidstatus,
+                        invstatus, s, pageable);
             case "superadmin":
-                return iaRepo
-                        .findByStatusAndVoidstatusAndInvstatusAndActivityrefContainingOrStatusAndVoidstatusAndInvstatusAndLabelContainingOrStatusAndVoidstatusAndInvstatusAndItemcodeContainingOrStatusAndVoidstatusAndInvstatusAndVouchercodeContainingOrStatusAndVoidstatusAndInvstatusAndCustomernameContaining(
-                                1, voidstatus, invstatus, s, 1, voidstatus, invstatus, s, 1, voidstatus, invstatus, s,
-                                1, voidstatus, invstatus, s, 1, voidstatus, invstatus, s, pagable);
+                return iaRepo.findInvActivityByVoidstatusInvstatusSearchContain(voidstatus, invstatus, s, pageable);
             }
-            return iaRepo
-                    .findByUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusAndCustomernameContaining(
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s,
-                            tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, invstatus, s, pagable);
+            return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearchContain(shopid, companyid,
+                    voidstatus, invstatus, s, pageable);
         }
         switch (role) {
         case "admin":
-            return iaRepo
-                    .findByCompanyidAndStatusAndVoidstatusAndActivityrefContainingOrCompanyidAndStatusAndVoidstatusAndLabelContainingOrCompanyidAndStatusAndVoidstatusAndItemcodeContainingOrCompanyidAndStatusAndVoidstatusAndVouchercodeContainingOrCompanyidAndStatusAndVoidstatusAndCustomernameContainingOrCompanyidAndStatusAndVoidstatusAndInvstatusContaining(
-                            tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                            tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                            tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getCompanyid(), 1, voidstatus, s,
-                            pagable);
+            return iaRepo.findInvActivityByCompanyidVoidstatusSearchContain(companyid, voidstatus, s, pageable);
         case "superadmin":
-            return iaRepo
-                    .findByStatusAndVoidstatusAndActivityrefContainingOrStatusAndVoidstatusAndLabelContainingOrStatusAndVoidstatusAndItemcodeContainingOrStatusAndVoidstatusAndVouchercodeContainingOrStatusAndVoidstatusAndCustomernameContainingOrStatusAndVoidstatusAndInvstatusContaining(
-                            1, voidstatus, s, 1, voidstatus, s, 1, voidstatus, s, 1, voidstatus, s, 1, voidstatus, s, 1,
-                            voidstatus, s, pagable);
+            return iaRepo.findInvActivityByVoidstatusSearchContain(voidstatus, s, pageable);
         }
-        return iaRepo
-                .findByUseridAndCompanyidAndStatusAndVoidstatusAndActivityrefContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndLabelContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndItemcodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndVouchercodeContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndCustomernameContainingOrUseridAndCompanyidAndStatusAndVoidstatusAndInvstatusContaining(
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(),
-                        tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1,
-                        voidstatus, s, tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s,
-                        tokenData.getUserid(), tokenData.getCompanyid(), 1, voidstatus, s, tokenData.getUserid(),
-                        tokenData.getCompanyid(), 1, voidstatus, s, pagable);
+        return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearchContain(shopid, companyid, voidstatus, s,
+                pageable);
     }
 
     public boolean changeVoidStatus(String activityref, int voidstatus, TokenData tokenData) {

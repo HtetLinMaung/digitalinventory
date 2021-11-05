@@ -9,7 +9,7 @@ import java.util.Optional;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techhype.digitalinventory.InventoryActivity.ActivityTotalDto;
-import com.techhype.digitalinventory.InventoryActivity.IInvActivityRepository;
+import com.techhype.digitalinventory.InventoryActivity.IInvActivityRepo;
 import com.techhype.digitalinventory.models.TokenData;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,10 +21,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class InventoryService {
     private IInventoryRepository iRepo;
-    private IInvActivityRepository iaRepo;
+    private IInvActivityRepo iaRepo;
 
     @Autowired
-    public InventoryService(IInventoryRepository iRepo, IInvActivityRepository iaRepo) {
+    public InventoryService(IInventoryRepository iRepo, IInvActivityRepo iaRepo) {
         this.iRepo = iRepo;
         this.iaRepo = iaRepo;
     }
