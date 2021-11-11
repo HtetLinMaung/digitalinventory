@@ -49,14 +49,14 @@ public class InvActivityController {
     }
 
     @PostMapping(path = "batch")
-    public ResponseEntity<BaseResponse> addInventoryActivities(@RequestBody List<InventoryActivity> list,
+    public ResponseEntity<BaseResponse> addInventoryActivities(@RequestBody ListDto dto,
             @RequestHeader("Authorization") String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
-            var items = iaService.addInventoryActivities(list, auth.getTokenData());
+            var items = iaService.addInventoryActivities(dto.getList(), auth.getTokenData());
 
             return ResponseEntity.ok().body(BaseResponse.ok(items));
         } catch (Exception e) {
