@@ -196,4 +196,24 @@ public class ShopController {
             return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
         }
     }
+
+    @GetMapping(path = "maps/users/{shopid}")
+    public ResponseEntity<BaseResponse> getUsersByShopid(@PathVariable String shopid,
+            @RequestHeader("Authorization") String authorization) {
+        try {
+            var auth = authMiddleware.checkToken(authorization);
+            if (!auth.isAuth()) {
+                return auth.getResponse();
+            }
+            if (auth.getTokenData().getRole().equals("normaluser")) {
+                return new ResponseEntity<BaseResponse>(
+                        new BaseResponse(ServerStatus.UNAUTHORIZED, ServerMessage.UNAUTHORIZED, null),
+                        HttpStatus.UNAUTHORIZED);
+            }
+
+            return ResponseEntity.ok().body(BaseResponse.ok(sService.getUsersByShopid(shopid, auth.getTokenData())));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.internalServerError());
+        }
+    }
 }

@@ -1,6 +1,8 @@
 package com.techhype.digitalinventory.shop;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import com.techhype.digitalinventory.models.TokenData;
@@ -149,5 +151,19 @@ public class ShopService {
         }
         ismRepo.save(shopMap);
         return true;
+    }
+
+    public List<ShopMap> getUsersByShopid(String shopid, TokenData tokenData) {
+        var role = tokenData.getRole();
+        var companyid = tokenData.getCompanyid();
+        switch (role) {
+        case "admin":
+            return ismRepo.findByCompanyidAndShopidAndStatus(companyid, shopid, 1);
+        case "superadmin":
+            return ismRepo.findByShopidAndStatus(shopid, 1);
+        default:
+            return new ArrayList<>();
+        }
+
     }
 }
