@@ -1,5 +1,6 @@
 package com.techhype.digitalinventory.shop;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,7 @@ public interface IShopMapRepo extends JpaRepository<ShopMap, Long> {
 
     Optional<ShopMap> findByUserrefAndStatus(String userref, int status);
 
+    List<ShopMap> findByShopidAndStatus(String shopid, int status);
+
+    List<ShopMap> findByCompanyidAndShopidAndStatus(String companyid, String shopid, int status);
 }
