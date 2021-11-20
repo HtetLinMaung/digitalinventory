@@ -144,7 +144,8 @@ public class InvActivityService {
     }
 
     public IAFilterTotalDto getInvActiviesTotal(String search, int page, int perpage, String sortby, String reverse,
-            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, String cid, String sid,
+            String uid, TokenData tokenData) {
         var role = tokenData.getRole();
         var companyid = tokenData.getCompanyid();
         var shopid = tokenData.getShopid();
@@ -155,6 +156,14 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
+                            if (!sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityTotalsByUseridShopidCompanyidInvstatusDateBetween(uid, sid,
+                                        companyid, invstatus, fromdate, todate).get(0);
+                            }
+                            if (!sid.equals("all")) {
+                                return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusDateBetween(sid, companyid,
+                                        invstatus, fromdate, todate).get(0);
+                            }
                             iaRepo.findInvActivityTotalsByCompanyidInvstatusDateBetween(companyid, invstatus, fromdate,
                                     todate).get(0);
                         case "superadmin":

@@ -240,14 +240,15 @@ public class InvActivityController {
             @RequestParam int voidstatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
-            @RequestParam String invstatus, @RequestHeader("Authorization") String authorization) {
+            @RequestParam String invstatus, @RequestParam String companyid, @RequestParam String shopid,
+            @RequestParam String userid, @RequestHeader("Authorization") String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
             var totals = iaService.getInvActiviesTotal(search, page, perpage, sortby, reverse, voidstatus, fromdate,
-                    todate, invstatus, auth.getTokenData());
+                    todate, invstatus, companyid, shopid, userid, auth.getTokenData());
 
             return ResponseEntity.ok().body(BaseResponse.ok(totals));
         } catch (Exception e) {
