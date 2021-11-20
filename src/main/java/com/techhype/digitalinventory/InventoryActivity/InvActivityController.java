@@ -149,14 +149,15 @@ public class InvActivityController {
             @RequestParam int voidstatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
-            @RequestParam String invstatus, @RequestParam String authorization) {
+            @RequestParam String invstatus, @RequestParam String companyid, @RequestParam String shopid,
+            @RequestParam String userid, @RequestParam String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
             var invpage = iaService.getInvActivities(search, page, perpage, sortby, reverse, voidstatus, fromdate,
-                    todate, invstatus, auth.getTokenData());
+                    todate, invstatus, companyid, shopid, userid, auth.getTokenData());
             List<LinkedHashMap<String, Object>> exceldata = new ArrayList<>();
             int total = 0;
             int i = 1;
@@ -211,14 +212,15 @@ public class InvActivityController {
             @RequestParam int voidstatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
-            @RequestParam String invstatus, @RequestHeader("Authorization") String authorization) {
+            @RequestParam String invstatus, @RequestParam String companyid, @RequestParam String shopid,
+            @RequestParam String userid, @RequestHeader("Authorization") String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
             var invpage = iaService.getInvActivities(search, page, perpage, sortby, reverse, voidstatus, fromdate,
-                    todate, invstatus, auth.getTokenData());
+                    todate, invstatus, companyid, shopid, userid, auth.getTokenData());
             var body = new PaginationResponse();
             body.setData(invpage.getContent());
             body.setPagecount(invpage.getTotalPages());
@@ -238,14 +240,15 @@ public class InvActivityController {
             @RequestParam int voidstatus,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fromdate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime todate,
-            @RequestParam String invstatus, @RequestHeader("Authorization") String authorization) {
+            @RequestParam String invstatus, @RequestParam String companyid, @RequestParam String shopid,
+            @RequestParam String userid, @RequestHeader("Authorization") String authorization) {
         try {
             var auth = authMiddleware.checkToken(authorization);
             if (!auth.isAuth()) {
                 return auth.getResponse();
             }
             var totals = iaService.getInvActiviesTotal(search, page, perpage, sortby, reverse, voidstatus, fromdate,
-                    todate, invstatus, auth.getTokenData());
+                    todate, invstatus, companyid, shopid, userid, auth.getTokenData());
 
             return ResponseEntity.ok().body(BaseResponse.ok(totals));
         } catch (Exception e) {

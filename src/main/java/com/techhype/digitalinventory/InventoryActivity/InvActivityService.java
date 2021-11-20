@@ -144,7 +144,8 @@ public class InvActivityService {
     }
 
     public IAFilterTotalDto getInvActiviesTotal(String search, int page, int perpage, String sortby, String reverse,
-            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, String cid, String sid,
+            String uid, TokenData tokenData) {
         var role = tokenData.getRole();
         var companyid = tokenData.getCompanyid();
         var shopid = tokenData.getShopid();
@@ -155,6 +156,14 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
+                            if (!sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityTotalsByUseridShopidCompanyidInvstatusDateBetween(uid, sid,
+                                        companyid, invstatus, fromdate, todate).get(0);
+                            }
+                            if (!sid.equals("all")) {
+                                return iaRepo.findInvActivityTotalsByShopidCompanyidInvstatusDateBetween(sid, companyid,
+                                        invstatus, fromdate, todate).get(0);
+                            }
                             iaRepo.findInvActivityTotalsByCompanyidInvstatusDateBetween(companyid, invstatus, fromdate,
                                     todate).get(0);
                         case "superadmin":
@@ -415,7 +424,8 @@ public class InvActivityService {
     }
 
     public Page<InventoryActivity> getInvActivities(String search, int page, int perpage, String sortby, String reverse,
-            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, TokenData tokenData) {
+            int voidstatus, LocalDateTime fromdate, LocalDateTime todate, String invstatus, String cid, String sid,
+            String uid, TokenData tokenData) {
         var role = tokenData.getRole();
         var shopid = tokenData.getShopid();
         var companyid = tokenData.getCompanyid();
@@ -428,9 +438,29 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
+                            if (!sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetween(uid, sid,
+                                        companyid, invstatus, fromdate, todate, pageable);
+                            }
+                            if (!sid.equals("all")) {
+                                return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetween(sid, companyid,
+                                        invstatus, fromdate, todate, pageable);
+                            }
                             return iaRepo.findInvActivityByCompanyidInvstatusDateBetween(companyid, invstatus, fromdate,
                                     todate, pageable);
                         case "superadmin":
+                            if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetween(uid, sid, cid,
+                                        invstatus, fromdate, todate, pageable);
+                            }
+                            if (!cid.equals("all") && !sid.equals("all")) {
+                                return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetween(sid, cid, invstatus,
+                                        fromdate, todate, pageable);
+                            }
+                            if (!cid.equals("all")) {
+                                return iaRepo.findInvActivityByCompanyidInvstatusDateBetween(cid, invstatus, fromdate,
+                                        todate, pageable);
+                            }
                             return iaRepo.findInvActivityByInvstatusDateBetween(invstatus, fromdate, todate, pageable);
                         }
                         return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetween(shopid, companyid, invstatus,
@@ -438,8 +468,27 @@ public class InvActivityService {
                     }
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidDateBetween(uid, sid, companyid,
+                                    fromdate, todate, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridCompanyidDateBetween(uid, cid, fromdate, todate,
+                                    pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidDateBetween(companyid, fromdate, todate, pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidDateBetween(uid, sid, cid, fromdate,
+                                    todate, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidDateBetween(sid, cid, fromdate, todate,
+                                    pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidDateBetween(cid, fromdate, todate, pageable);
+                        }
                         return iaRepo.findInvActivityByDateBetween(fromdate, todate, pageable);
                     }
                     return iaRepo.findInvActivityByShopidCompanyidDateBetween(shopid, companyid, fromdate, todate,
@@ -448,16 +497,49 @@ public class InvActivityService {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatus(uid, sid, companyid,
+                                    invstatus, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatus(sid, companyid, invstatus,
+                                    pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidInvstatus(companyid, invstatus, pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatus(uid, sid, cid, invstatus,
+                                    pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatus(sid, cid, invstatus, pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidInvstatus(cid, invstatus, pageable);
+                        }
                         return iaRepo.findInvActivityByInvstatus(invstatus, pageable);
                     }
                     return iaRepo.findInvActivityByShopidCompanyidInvstatus(shopid, companyid, invstatus, pageable);
                 }
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyid(uid, sid, companyid, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyid(sid, companyid, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyid(companyid, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyid(uid, sid, cid, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyid(sid, cid, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyid(cid, pageable);
+                    }
                     return iaRepo.findByStatus(1, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyid(shopid, companyid, pageable);
@@ -466,10 +548,30 @@ public class InvActivityService {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetween(uid, sid,
+                                    companyid, voidstatus, invstatus, fromdate, todate, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetween(sid, companyid,
+                                    voidstatus, invstatus, fromdate, todate, pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetween(companyid, voidstatus,
                                 invstatus, fromdate, todate, pageable);
 
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetween(uid, sid,
+                                    cid, voidstatus, invstatus, fromdate, todate, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetween(sid, cid,
+                                    voidstatus, invstatus, fromdate, todate, pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetween(cid, voidstatus,
+                                    invstatus, fromdate, todate, pageable);
+                        }
                         return iaRepo.findInvActivityByVoidstatusInvstatusDateBetween(voidstatus, invstatus, fromdate,
                                 todate, pageable);
                     }
@@ -478,9 +580,29 @@ public class InvActivityService {
                 }
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetween(uid, sid, companyid,
+                                voidstatus, fromdate, todate, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetween(sid, companyid, voidstatus,
+                                fromdate, todate, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidVoidstatusDateBetween(companyid, voidstatus, fromdate,
                             todate, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetween(uid, sid, cid,
+                                voidstatus, fromdate, todate, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetween(sid, cid, voidstatus,
+                                fromdate, todate, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidVoidstatusDateBetween(cid, voidstatus, fromdate, todate,
+                                pageable);
+                    }
                     return iaRepo.findInvActivityByVoidstatusDateBetween(voidstatus, fromdate, todate, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetween(shopid, companyid, voidstatus,
@@ -490,9 +612,29 @@ public class InvActivityService {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatus(uid, sid, companyid,
+                                voidstatus, invstatus, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatus(sid, companyid, voidstatus,
+                                invstatus, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidVoidstatusInvstatus(companyid, voidstatus, invstatus,
                             pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatus(uid, sid, cid,
+                                voidstatus, invstatus, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatus(sid, cid, voidstatus,
+                                invstatus, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidVoidstatusInvstatus(cid, voidstatus, invstatus,
+                                pageable);
+                    }
                     return iaRepo.findInvActivityByVoidstatusInvstatus(voidstatus, invstatus, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatus(shopid, companyid, voidstatus,
@@ -500,8 +642,24 @@ public class InvActivityService {
             }
             switch (role) {
             case "admin":
+                if (!sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatus(uid, sid, companyid, voidstatus,
+                            pageable);
+                }
+                if (!sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatus(sid, companyid, voidstatus, pageable);
+                }
                 return iaRepo.findInvActivityByCompanyidVoidstatus(companyid, voidstatus, pageable);
             case "superadmin":
+                if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatus(uid, sid, cid, voidstatus, pageable);
+                }
+                if (!cid.equals("all") && !sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatus(sid, cid, voidstatus, pageable);
+                }
+                if (!cid.equals("all")) {
+                    return iaRepo.findInvActivityByCompanyidVoidstatus(cid, voidstatus, pageable);
+                }
                 return iaRepo.findInvActivityByVoidstatus(voidstatus, pageable);
             }
             return iaRepo.findInvActivityByShopidCompanyidVoidstatus(shopid, companyid, voidstatus, pageable);
@@ -515,9 +673,29 @@ public class InvActivityService {
                     if (!invstatus.equals("all")) {
                         switch (role) {
                         case "admin":
+                            if (!sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetweenSearch(uid, sid,
+                                        companyid, invstatus, fromdate, todate, s, pageable);
+                            }
+                            if (!sid.equals("all")) {
+                                return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearch(sid, companyid,
+                                        invstatus, fromdate, todate, s, pageable);
+                            }
                             return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearch(companyid, invstatus,
                                     fromdate, todate, s, pageable);
                         case "superadmin":
+                            if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                                return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetweenSearch(uid, sid,
+                                        cid, invstatus, fromdate, todate, s, pageable);
+                            }
+                            if (!cid.equals("all") && !sid.equals("all")) {
+                                return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearch(sid, cid,
+                                        invstatus, fromdate, todate, s, pageable);
+                            }
+                            if (!cid.equals("all")) {
+                                return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearch(cid, invstatus,
+                                        fromdate, todate, s, pageable);
+                            }
                             return iaRepo.findInvActivityByInvstatusDateBetweenSearch(invstatus, fromdate, todate, s,
                                     pageable);
                         }
@@ -526,9 +704,29 @@ public class InvActivityService {
                     }
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidDateBetweenSearch(uid, sid, companyid,
+                                    fromdate, todate, s, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearch(sid, companyid, fromdate,
+                                    todate, s, pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidDateBetweenSearch(companyid, fromdate, todate, s,
                                 pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidDateBetweenSearch(uid, sid, cid,
+                                    fromdate, todate, s, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearch(sid, cid, fromdate, todate,
+                                    s, pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidDateBetweenSearch(cid, fromdate, todate, s,
+                                    pageable);
+                        }
                         return iaRepo.findInvActivityByDateBetweenSearch(fromdate, todate, s, pageable);
                     }
                     return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearch(shopid, companyid, fromdate, todate,
@@ -537,8 +735,27 @@ public class InvActivityService {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusSearch(uid, sid, companyid,
+                                    invstatus, s, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatusSearch(sid, companyid, invstatus, s,
+                                    pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidInvstatusSearch(companyid, invstatus, s, pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusSearch(uid, sid, cid,
+                                    invstatus, s, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatusSearch(sid, cid, invstatus, s,
+                                    pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidInvstatusSearch(cid, invstatus, s, pageable);
+                        }
                         return iaRepo.findInvActivityByInvstatusSearch(invstatus, s, pageable);
                     }
                     return iaRepo.findInvActivityByShopidCompanyidInvstatusSearch(shopid, companyid, invstatus, s,
@@ -546,8 +763,23 @@ public class InvActivityService {
                 }
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidSearch(uid, sid, companyid, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidSearch(sid, companyid, s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidSearch(companyid, s, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidSearch(uid, sid, cid, s, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidSearch(sid, cid, s, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidSearch(cid, s, pageable);
+                    }
                     return iaRepo.findInvActivityBySearch(s, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidSearch(shopid, companyid, s, pageable);
@@ -556,9 +788,29 @@ public class InvActivityService {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetweenSearch(
+                                    uid, sid, companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearch(sid,
+                                    companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearch(companyid,
                                 voidstatus, invstatus, fromdate, todate, s, pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetweenSearch(
+                                    uid, sid, cid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearch(sid, cid,
+                                    voidstatus, invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearch(cid,
+                                    voidstatus, invstatus, fromdate, todate, s, pageable);
+                        }
                         return iaRepo.findInvActivityByVoidstatusInvstatusDateBetweenSearch(voidstatus, invstatus,
                                 fromdate, todate, s, pageable);
                     }
@@ -567,9 +819,29 @@ public class InvActivityService {
                 }
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetweenSearch(uid, sid, cid,
+                                voidstatus, fromdate, todate, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearch(sid, companyid,
+                                voidstatus, fromdate, todate, s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearch(companyid, voidstatus, fromdate,
                             todate, s, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetweenSearch(uid, sid, cid,
+                                voidstatus, fromdate, todate, s, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearch(sid, cid, voidstatus,
+                                fromdate, todate, s, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearch(cid, voidstatus, fromdate,
+                                todate, s, pageable);
+                    }
                     return iaRepo.findInvActivityByVoidstatusDateBetweenSearch(voidstatus, fromdate, todate, s,
                             pageable);
                 }
@@ -579,9 +851,29 @@ public class InvActivityService {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusSearch(uid, sid,
+                                companyid, voidstatus, invstatus, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearch(sid, companyid,
+                                voidstatus, invstatus, s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearch(companyid, voidstatus, invstatus,
                             s, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusSearch(uid, sid, cid,
+                                voidstatus, invstatus, s, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearch(sid, cid, voidstatus,
+                                invstatus, s, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearch(cid, voidstatus, invstatus, s,
+                                pageable);
+                    }
                     return iaRepo.findInvActivityByVoidstatusInvstatusSearch(voidstatus, invstatus, s, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearch(shopid, companyid, voidstatus,
@@ -589,8 +881,25 @@ public class InvActivityService {
             }
             switch (role) {
             case "admin":
+                if (!sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusSearch(uid, sid, companyid,
+                            voidstatus, s, pageable);
+                }
+                if (!sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearch(sid, cid, voidstatus, s, pageable);
+                }
                 return iaRepo.findInvActivityByCompanyidVoidstatusSearch(companyid, voidstatus, s, pageable);
             case "superadmin":
+                if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusSearch(uid, sid, cid, voidstatus, s,
+                            pageable);
+                }
+                if (!cid.equals("all") && !sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearch(sid, cid, voidstatus, s, pageable);
+                }
+                if (!cid.equals("all")) {
+                    return iaRepo.findInvActivityByCompanyidVoidstatusSearch(cid, voidstatus, s, pageable);
+                }
                 return iaRepo.findInvActivityByVoidstatusSearch(voidstatus, s, pageable);
             }
             return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearch(shopid, companyid, voidstatus, s, pageable);
@@ -600,9 +909,29 @@ public class InvActivityService {
                 if (!invstatus.equals("all")) {
                     switch (role) {
                     case "admin":
+                        if (!sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetweenSearchContain(uid,
+                                    sid, companyid, invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearchContain(sid,
+                                    companyid, invstatus, fromdate, todate, s, pageable);
+                        }
                         return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearchContain(companyid, invstatus,
                                 fromdate, todate, s, pageable);
                     case "superadmin":
+                        if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                            return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusDateBetweenSearchContain(uid,
+                                    sid, cid, invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!cid.equals("all") && !sid.equals("all")) {
+                            return iaRepo.findInvActivityByShopidCompanyidInvstatusDateBetweenSearchContain(sid, cid,
+                                    invstatus, fromdate, todate, s, pageable);
+                        }
+                        if (!cid.equals("all")) {
+                            return iaRepo.findInvActivityByCompanyidInvstatusDateBetweenSearchContain(cid, invstatus,
+                                    fromdate, todate, s, pageable);
+                        }
                         return iaRepo.findInvActivityByInvstatusDateBetweenSearchContain(invstatus, fromdate, todate, s,
                                 pageable);
                     }
@@ -611,9 +940,29 @@ public class InvActivityService {
                 }
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidDateBetweenSearchContain(uid, sid,
+                                companyid, fromdate, todate, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearchContain(sid, companyid, fromdate,
+                                todate, s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidDateBetweenSearchContain(companyid, fromdate, todate, s,
                             pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidDateBetweenSearchContain(uid, sid, cid,
+                                fromdate, todate, s, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearchContain(sid, cid, fromdate,
+                                todate, s, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidDateBetweenSearchContain(cid, fromdate, todate, s,
+                                pageable);
+                    }
                     return iaRepo.findInvActivityByDateBetweenSearchContain(fromdate, todate, s, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidDateBetweenSearchContain(shopid, companyid, fromdate,
@@ -622,8 +971,27 @@ public class InvActivityService {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusSearchContain(uid, sid, companyid,
+                                invstatus, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidInvstatusSearchContain(sid, companyid, invstatus,
+                                s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidInvstatusSearchContain(companyid, invstatus, s, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidInvstatusSearchContain(uid, sid, cid,
+                                invstatus, search, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidInvstatusSearchContain(sid, cid, invstatus, s,
+                                pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidInvstatusSearchContain(cid, invstatus, s, pageable);
+                    }
                     return iaRepo.findInvActivityByInvstatusSearchContain(invstatus, s, pageable);
                 }
                 return iaRepo.findInvActivityByShopidCompanyidInvstatusSearchContain(shopid, companyid, invstatus, s,
@@ -631,8 +999,23 @@ public class InvActivityService {
             }
             switch (role) {
             case "admin":
+                if (!sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidSearchContain(uid, sid, companyid, s, pageable);
+                }
+                if (!sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidSearchContain(sid, companyid, s, pageable);
+                }
                 return iaRepo.findInvActivityByCompanyidSearchContain(companyid, s, pageable);
             case "superadmin":
+                if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidSearchContain(uid, sid, cid, s, pageable);
+                }
+                if (!cid.equals("all") && !sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidSearchContain(sid, cid, s, pageable);
+                }
+                if (!cid.equals("all")) {
+                    return iaRepo.findInvActivityByCompanyidSearchContain(cid, s, pageable);
+                }
                 return iaRepo.findInvActivityBySearchContain(s, pageable);
             }
             return iaRepo.findInvActivityByShopidCompanyidSearchContain(shopid, companyid, s, pageable);
@@ -641,9 +1024,29 @@ public class InvActivityService {
             if (!invstatus.equals("all")) {
                 switch (role) {
                 case "admin":
+                    if (!sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(
+                                uid, sid, companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                    }
+                    if (!sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(sid,
+                                companyid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                    }
                     return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearchContain(companyid,
                             voidstatus, invstatus, fromdate, todate, s, pageable);
                 case "superadmin":
+                    if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                        return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(
+                                uid, sid, cid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                    }
+                    if (!cid.equals("all") && !sid.equals("all")) {
+                        return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusDateBetweenSearchContain(sid,
+                                cid, voidstatus, invstatus, fromdate, todate, s, pageable);
+                    }
+                    if (!cid.equals("all")) {
+                        return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusDateBetweenSearchContain(cid,
+                                voidstatus, invstatus, fromdate, todate, s, pageable);
+                    }
                     return iaRepo.findInvActivityByVoidstatusInvstatusDateBetweenSearchContain(voidstatus, invstatus,
                             fromdate, todate, s, pageable);
                 }
@@ -652,9 +1055,29 @@ public class InvActivityService {
             }
             switch (role) {
             case "admin":
+                if (!sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetweenSearchContain(uid, sid,
+                            companyid, voidstatus, fromdate, todate, s, pageable);
+                }
+                if (!sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearchContain(sid, companyid,
+                            voidstatus, fromdate, todate, s, pageable);
+                }
                 return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearchContain(companyid, voidstatus,
                         fromdate, todate, s, pageable);
             case "superadmin":
+                if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusDateBetweenSearchContain(uid, sid,
+                            cid, voidstatus, fromdate, todate, s, pageable);
+                }
+                if (!cid.equals("all") && !sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusDateBetweenSearchContain(sid, cid,
+                            voidstatus, fromdate, todate, s, pageable);
+                }
+                if (!cid.equals("all")) {
+                    return iaRepo.findInvActivityByCompanyidVoidstatusDateBetweenSearchContain(cid, voidstatus,
+                            fromdate, todate, s, pageable);
+                }
                 return iaRepo.findInvActivityByVoidstatusDateBetweenSearchContain(voidstatus, fromdate, todate, s,
                         pageable);
             }
@@ -664,9 +1087,29 @@ public class InvActivityService {
         if (!invstatus.equals("all")) {
             switch (role) {
             case "admin":
+                if (!sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusSearchContain(uid, sid,
+                            companyid, voidstatus, invstatus, s, pageable);
+                }
+                if (!sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearchContain(sid, companyid,
+                            voidstatus, invstatus, s, pageable);
+                }
                 return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearchContain(companyid, voidstatus,
                         invstatus, s, pageable);
             case "superadmin":
+                if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                    return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusInvstatusSearchContain(uid, sid, cid,
+                            voidstatus, invstatus, s, pageable);
+                }
+                if (!cid.equals("all") && !sid.equals("all")) {
+                    return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearchContain(sid, cid, voidstatus,
+                            invstatus, s, pageable);
+                }
+                if (!cid.equals("all")) {
+                    return iaRepo.findInvActivityByCompanyidVoidstatusInvstatusSearchContain(cid, voidstatus, invstatus,
+                            s, pageable);
+                }
                 return iaRepo.findInvActivityByVoidstatusInvstatusSearchContain(voidstatus, invstatus, s, pageable);
             }
             return iaRepo.findInvActivityByShopidCompanyidVoidstatusInvstatusSearchContain(shopid, companyid,
@@ -674,8 +1117,27 @@ public class InvActivityService {
         }
         switch (role) {
         case "admin":
+            if (!sid.equals("all") && !uid.equals("all")) {
+                return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusSearchContain(uid, sid, companyid,
+                        voidstatus, s, pageable);
+            }
+            if (!sid.equals("all")) {
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearchContain(sid, companyid, voidstatus, s,
+                        pageable);
+            }
             return iaRepo.findInvActivityByCompanyidVoidstatusSearchContain(companyid, voidstatus, s, pageable);
         case "superadmin":
+            if (!cid.equals("all") && !sid.equals("all") && !uid.equals("all")) {
+                return iaRepo.findInvActivityByUseridShopidCompanyidVoidstatusSearchContain(uid, sid, cid, voidstatus,
+                        s, pageable);
+            }
+            if (!cid.equals("all") && !sid.equals("all")) {
+                return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearchContain(sid, cid, voidstatus, s,
+                        pageable);
+            }
+            if (!cid.equals("all")) {
+                return iaRepo.findInvActivityByCompanyidVoidstatusSearchContain(cid, voidstatus, s, pageable);
+            }
             return iaRepo.findInvActivityByVoidstatusSearchContain(voidstatus, s, pageable);
         }
         return iaRepo.findInvActivityByShopidCompanyidVoidstatusSearchContain(shopid, companyid, voidstatus, s,
