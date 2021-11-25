@@ -3,6 +3,7 @@ package com.techhype.digitalinventory.auth;
 import java.util.HashMap;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techhype.digitalinventory.configs.Environment;
 import com.techhype.digitalinventory.constants.ServerMessage;
 import com.techhype.digitalinventory.constants.ServerStatus;
 import com.techhype.digitalinventory.models.BaseResponse;
@@ -26,11 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private JwtTokenUtil jwt;
     private ShopService sService;
+    private Environment env;
 
     @Autowired
-    public AuthController(JwtTokenUtil jwt, ShopService sService) {
+    public AuthController(JwtTokenUtil jwt, ShopService sService, Environment env) {
         this.jwt = jwt;
         this.sService = sService;
+        this.env = env;
     }
 
     @PostMapping(path = "get-app-token")
@@ -38,7 +41,7 @@ public class AuthController {
         try {
             var body = new HashMap<String, Object>();
             body.put("token", tokenData.getIamtoken());
-            var response = RestClient.post("http://proxy/iam/auth/check-token", body, new HashMap<>());
+            var response = RestClient.post(env.getProxyhost() + "/iam/auth/check-token", body, new HashMap<>());
 
             if (!response.get("code").equals(200)) {
                 return new ResponseEntity<BaseResponse>(
